@@ -1,10 +1,11 @@
 let fs = require("fs");
 
 
-var partOne = function(stream) {
+var partOneAndTwo = function(stream) {
     var score = 0;
     var currentDepth = 0;
     var garbageMode = false;
+    var garbageCount = 0;
 
     for (var i = 0; i < stream.length; i++) {
         var char = stream[i];
@@ -13,6 +14,8 @@ var partOne = function(stream) {
                 i++;
             } else if (char == '>') {
                 garbageMode = false;
+            } else { // part 2
+                garbageCount++; 
             }
             continue;
         }
@@ -25,12 +28,8 @@ var partOne = function(stream) {
             score += currentDepth--;
         }
     }
-    console.log(score);
-}
-
-
-var partTwo = function(stream) {
-
+    console.log("P1: " + score);
+    console.log("P2: " +  garbageCount);
 }
 
 
@@ -41,4 +40,4 @@ var data = [
     '{{<a!>},{<a!>},{<a!>},{<ab>}}',
 ]
 data.push(fs.readFileSync('inp9.txt').toString());
-data.map(partOne);
+data.map(partOneAndTwo);
