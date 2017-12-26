@@ -71,16 +71,18 @@ let convertToDenseHash = function(arr) {
 let partTwo = function(inputString) {
     var result = convertToASCII(inputString);
     result = partOne(result, 256, 64); // get the sparse hash
-    result = convertToDenseHash(result).map((x) => x < 16 ? '0' + x.toString(16) : x.toString(16)).join('');    
+    result = convertToDenseHash(result).map((x) => x < 16 ? '0' + x.toString(16) : x.toString(16)).join('');
     return result;
 }
 
+module.exports = function getKnotHash(inputString) { return partTwo(inputString); }
 
 var data = fs.readFileSync('inp10.txt').toString().split(',').map((x) => Number(x));
+/*
 let result = partOne(data, 256, 1);
 console.log("P1: " + result[0] * result[1]);
 
 data = ['', 'AoC 2017', '1,2,3', '1,2,4'];
 data.push(fs.readFileSync('inp10.txt').toString());
 data.map((x) => console.log('P2: ' + x + ': ' + partTwo(x)))
-
+*/
