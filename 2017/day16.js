@@ -63,7 +63,7 @@ function partTwo(moves) {
         config = doTheDance(config, dance);
         iterations++;
         if (s(config) == s(initialConfig)) {
-            iterations = 1000000000 - (1000000000 % iterations);
+            iterations = 1000000000 - 1000000000 % iterations;
         } 
     }
     console.log('P2: ' + config.map((x) => String.fromCharCode(x)).join(''))
