@@ -25,25 +25,50 @@ let partner = function(config, n1, n2) {
     return exchange(config, x1, x2);  
 }
 
-function partOne(moves) {
-    var config = [];
-    for (var i = 97; i < 97 + 16; i++) { 
-        config.push(i); // ascii for swapping with arithmetic
-    }
+let doTheDance = function(config, moves) {
+    for (var i = 0; i < moves.length; i++) { eval(moves[i]); }
+    return config;
+}
+
+let prepareDance = function(moves){
     // Replace moves with func calls
     moves = moves.replace(/([,]*)s(\d+)([,]*)/g, '$1config = unshift(config, $2);$3')
     moves = moves.replace(/([,]*)x(\d+)\/(\d+)([,]*)/g, '$1config = exchange(config, $2, $3);$4')
     moves = moves.replace(/([,]*)p([a-p]{1})\/([a-p]{1})([,]*)/g, '$1config = partner(config, "$2", "$3");$4')
     moves = moves.split(';,');
-    for (var i = 0; i < moves.length; i++) { eval(moves[i]); }
-    console.log(config.map((x) => String.fromCharCode(x)).join(''));
+    return moves;
+}
+
+function partOne(moves) {
+    var config = [];
+    for (var i = 97; i < 97 + 16; i++) { 
+        config.push(i); // ascii for swapping with arithmetic
+    }
+    let dance = prepareDance(moves);
+    config = doTheDance(config, dance);
+    console.log('P1: ' + config.map((x) => String.fromCharCode(x)).join(''));
 };
 
 function partTwo(moves) {
+    var config = [];
+    var initialConfig = [];
+    var iterations = 0;
+    let s = JSON.stringify;
+    for (var i = 97; i < 97 + 16; i++) { 
+        config.push(i); // ascii for swapping with arithmetic
+        initialConfig.push(i);
+    }
+    let dance = prepareDance(moves);
+    while (iterations < 1000000000) {
+        config = doTheDance(config, dance);
+        iterations++;
+        if (s(config) == s(initialConfig)) {
+            iterations = 1000000000 - (1000000000 % iterations);
+        } 
+    }
+    console.log('P2: ' + config.map((x) => String.fromCharCode(x)).join(''))
 };
 
 
 var moves = fs.readFileSync("inp16.txt").toString().trim();
-partOne(moves);
-
-
+partTwo(moves);
