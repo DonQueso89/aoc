@@ -119,5 +119,3 @@ function partTwo(instructions) {
 var instructions = fs.readFileSync("inp18.txt").toString();
 partOne(instructions);
 partTwo(instructions);
-
-

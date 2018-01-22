@@ -43,11 +43,10 @@ function partTwo(data) {
             matchCount++; 
         }
     }
-    console.log('P1: ' + matchCount);
+    console.log('P2: ' + matchCount);
 };
 
 
 var data = fs.readFileSync("inp15.txt").toString().split('\n');
+partOne(data);
 partTwo(data);
-
-
