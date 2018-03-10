@@ -1,17 +1,20 @@
-from itertools import *
+from itertools import chain, combinations
 
 # For Day 1, the sum of the subsets must be sum(all_packages) / 3 (516)
 # For Day 2, the sum of the subsets must be sum(all_packages) / 4 (387)
 
 weight_of_subset = 387
 
+
 # all_packages is the set.
 # Function for finding the powerset of all_packages.
-# Powerset only returns subsets of len > 4 and len < 7 because  other subsets need no consideration.
+# Powerset only returns subsets of len > 4 and len < 7 because  other subsets
+# need no consideration.
 def powerset(iterable):
     "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(4, 7))
+
 
 # Extract packages from file
 all_packages = []
@@ -37,5 +40,3 @@ for subset in subsets:
         products.append(reduce(lambda x, y: x * y, subset))
 
 print "Minimum product", min(products)
-
-

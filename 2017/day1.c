@@ -18,9 +18,7 @@ char* get_inp() {
     return buffer;
 }
 
-
-int main(void) {
-    char* inp = get_inp();
+void p1(char* inp) {
     int i = 0;
     int sum = 0;
     int size = strlen(inp);
@@ -30,6 +28,26 @@ int main(void) {
         }
         i++;
     }
-    printf("Part 1: %d", sum);
+    printf("Part 1: %d\n", sum);
+}
+
+void p2(char* inp) {
+    int i = 0;
+    int sum = 0;
+    int size = strlen(inp);
+    int halfway = size / 2;
+    while(i <= size) {
+        if(inp[i] == inp[(i + halfway) % size]) {
+            sum += (inp[i] - '0');
+        }
+        i++;
+    }
+    printf("Part 2: %d\n", sum);
+}
+
+int main(void) {
+    char* inp = get_inp();
+    p1(inp);
+    p2(inp);
     return 0;
 }
