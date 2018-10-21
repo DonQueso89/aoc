@@ -55,13 +55,12 @@ class Grid {
     }
 }
 
-function partOneAndTwo(grid) {
+function partOne(grid) {
     startCoordinate = [0, grid[0].findIndex((x) => x == '|')];
     startDirection = 'D';
     let result = resolveRoute(startCoordinate, startDirection, new Grid(grid), '');
     console.log('P1: ' + result[0]);
-    console.log('P2: ' + result[1]);
 };
 
 var grid = fs.readFileSync("inp19.txt").toString().split('\n').map((x) => Array.from(x))
-partOneAndTwo(grid);
+partOne(grid);

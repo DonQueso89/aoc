@@ -9,7 +9,7 @@ let nthSum = (d) => d == 1 ? 1 : multiplesOfEight.map((e, i, a) => a.slice(0, i)
 var partOne = function(d) {
     let nthMaxDist = multiplesOfEight[nthSq(d)] / 8;
     let distFromNextSum = nthSum(d) - d;
-    console.log("Part 1: " + nthMaxDist + Math.abs(nthMaxDist - distFromNextSum % (nthMaxDist * 2)))
+    console.log("Part 1: " + (nthMaxDist + Math.abs(nthMaxDist - distFromNextSum % (nthMaxDist * 2))));
 };
 
 
@@ -92,8 +92,8 @@ var partTwo = function(inp) {
 }
 
 
-//data = [1, 12, 23, 1024];
+data = [1, 12, 23, 1024, 10000];
 let inp = Number(fs.readFileSync("inp3.txt").toString());
-//data.push(inp);
-//data.map(partOne);
-partTwo(inp);
+data.push(inp);
+data.map(x => partOne(x));
+//partTwo(inp);
