@@ -31,7 +31,7 @@ class Solution {
     /*
     * Get input from the file as Particles
     */
-    val inp = Source.fromFile("../inp20.txt").getLines.toList
+    val inp = Source.fromFile("inp20.txt").getLines.toList
     def filterChars(c: Character): Boolean = !List('<', '>', '=', 'p', 'v', 'a').contains(c)
     inp.map((line) => {
       val props: List[Int] = line
