@@ -1,2 +1,5 @@
-# aoc2017
-Doing it in js
+# aoc solutions
+Using it to learn new languages:
+- javascript
+- scala
+- C 
