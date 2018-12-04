@@ -2,10 +2,10 @@ import re
 from collections import defaultdict
 data = open('input3').read().splitlines()
 state = defaultdict(int)
+# _id, left offset, top offset, w, h
 rgx = re.compile(r"^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$")
 result = 0
 no_overlap = None
-# left offset, top offset, w, h
 for claim in data:
     _id, x, y, w, h = map(int, rgx.match(claim).groups())
     for i in range(x, x + w):
