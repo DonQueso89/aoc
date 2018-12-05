@@ -47,7 +47,4 @@ for ch in string.ascii_lowercase:
 for p in pids:
     p.join()
 
-st = time.time()
-
 print('Part 2: ' + str(min(state)))
-print(time.time() - st)
