@@ -29,22 +29,24 @@ def chain_react(polymer):
             break
     return len(new_polymer)
 
-print('Part 1: ' + str(chain_react(data)))
+if __name__ == '__main__':
+    st = time.time()
+    print('Part 1: ' + str(chain_react(data)))
+    print(time.time()  - st)
 
-state = multiprocessing.Manager().list()
-pids = []
+    state = multiprocessing.Manager().list()
+    pids = []
+
+    def pf(char, state):
+        state.append(chain_react(data.replace(char, '').replace(char.upper(), '')))
 
 
-def pf(char, state):
-    state.append(chain_react(data.replace(char, '').replace(char.upper(), '')))
+    for ch in string.ascii_lowercase:
+        p = multiprocessing.Process(target=pf, args=(ch, state))
+        pids.append(p)
+        p.start()
 
+    for p in pids:
+        p.join()
 
-for ch in string.ascii_lowercase:
-    p = multiprocessing.Process(target=pf, args=(ch, state))
-    pids.append(p)
-    p.start()
-
-for p in pids:
-    p.join()
-
-print('Part 2: ' + str(min(state)))
+    print('Part 2: ' + str(min(state)))

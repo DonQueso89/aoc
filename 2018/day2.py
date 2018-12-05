@@ -1,5 +1,6 @@
 from collections import Counter
 from itertools import product
+from functools import reduce
 
 data = open('input2').read().splitlines()
 
