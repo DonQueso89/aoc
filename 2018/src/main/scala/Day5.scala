@@ -1,9 +1,11 @@
+package fun.aoc2018.day5
+
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import scala.math
 import scala.io.Source
 
-object Run extends App {
+object Solve extends App {
   lazy val input: String = Source.fromFile("input5").getLines.mkString
 
   val triggersReaction = (x:Char, y:Char) => (x -  y).abs == 32
