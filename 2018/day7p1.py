@@ -2,7 +2,7 @@ from pprint import pprint
 from collections import defaultdict
 
 
-def resolve(current_node, nodes):
+def resolve_order(current_node, nodes):
     result = ""
     while len(result) < len(nodes):
         result += current_node.name
@@ -57,6 +57,4 @@ if __name__ == '__main__':
         mapping[parent].append(child)
 
     entrypoint = sorted([v for k, v in nodes.items() if v.is_root and v.is_available], key=lambda x: x.name)[0]
-    pprint(mapping)
-    pprint(nodes)
-    print("Part 1: " + resolve(entrypoint, nodes.values()))
+    print("Part 1: " + resolve_order(entrypoint, nodes.values()))
