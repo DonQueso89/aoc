@@ -11,13 +11,7 @@ if __name__ == '__main__':
     marbles = [0, 2, 1]
 
     marble_idx = 1
-    c = 0
     for marble in range(3, num_marbles + 1):
-        if c < 30:
-            m = marbles.copy()
-            m[marble_idx] = "({})".format(m[marble_idx])
-            print('-'.join(map(str, m)))
-            c+=1
         player = next(players)
         if marble % 23 == 0:
             scores[player] += marble
