@@ -1,6 +1,5 @@
 import re
 import random
-import time
 
 
 class Light(object):
@@ -48,13 +47,12 @@ def show(lights, coords):
             except AssertionError:
                 result += "."
     print(result)
-    time.sleep(5)
 
 
 if __name__ == '__main__':
-    iteration = 0
+    seconds = 0
     # This is a trade off between performance and accuracy but the answer
-    # was found with this configuration
+    # was initially found with this configuration upon running the first time
     sample_size = 20
     meaningful_threshold = 0.02
     lights = []
@@ -75,7 +73,8 @@ if __name__ == '__main__':
                 break
         if num_aligned / sample_size >= meaningful_threshold:
             show(lights, coords)
-            break
+            print("Part 2: " + str(seconds))
         for l in lights:
             l.tick()
         coords = {(l.x, l.y) for l in lights}
+        seconds += 1
