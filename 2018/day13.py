@@ -101,7 +101,7 @@ if __name__ == '__main__':
     Cart.grid = grid
     collisions = []
 
-    while len(collisions) == 0:
+    while not collisions:
         collisions, carts = next_collision_state(carts)
 
     print("Part 1: " + str(collisions[0]))
@@ -112,5 +112,5 @@ if __name__ == '__main__':
         collisions, carts = next_collision_state(carts)
         if len(collisions) > 0:
             carts = [cart for cart in carts if (cart.x, cart.y) not in collisions]
-    print("Part 2: " + str(carts))
+    print("Part 2: " + str(carts[0]))
 
