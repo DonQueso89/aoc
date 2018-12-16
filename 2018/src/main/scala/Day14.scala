@@ -37,22 +37,22 @@ object Solve extends App {
   }
 
   @annotation.tailrec
-  def solveNumLeft(number: Int, numLookBack: Int, recipes: Map[Int, Int], elfOneIdx: Int, elfTwoIdx: Int): Int = {
+  def solveNumLeft(number: Int, numLookBack: Int, recipes: Map[Long, Long], elfOneIdx: Long, elfTwoIdx: Long): Long = {
     val numberCheck = (recipes.size - numLookBack to recipes.size - 1).map(
       recipes.getOrElse(_, 0)  
-    ).mkString("").contains(number.toString)
+    ).mkString("")
 
-    if (numberCheck) {
+    if (numberCheck.contains(number.toString)) {
       recipes.size - numLookBack
     } else {
       val currRecipeOne = recipes(elfOneIdx)
       val currRecipeTwo = recipes(elfTwoIdx)
       val nextSum = currRecipeOne + currRecipeTwo
-      val recipesDone = recipes.size
+      val recipesDone = recipes.size.toLong
       val recipeOne = nextSum / 10
       val recipeTwo = nextSum % 10
       if (recipeOne > 0) {
-        val newRecipes = recipes ++ Map(recipesDone -> recipeOne, recipesDone +  1 -> recipeTwo)
+        val newRecipes = recipes ++ Map[Long, Long](recipesDone -> recipeOne, recipesDone +  1L -> recipeTwo)
         solveNumLeft(
           number,
           numLookBack,
@@ -61,7 +61,7 @@ object Solve extends App {
           (elfTwoIdx + currRecipeTwo + 1) % newRecipes.size
         ) 
       } else {
-        val newRecipes = recipes ++ Map(recipesDone -> recipeTwo)
+        val newRecipes = recipes ++ Map[Long, Long](recipesDone -> recipeTwo)
         solveNumLeft(
           number,
           numLookBack,
@@ -84,7 +84,7 @@ object Solve extends App {
     )
     println(s"Part 1: ${result.mkString("")}")
   } else {
-    val result = solveNumLeft(input, input.toString.size, Map(0 -> 3, 1 -> 7), 0, 1)
+    val result = solveNumLeft(input, input.toString.size, Map(0L -> 3L, 1L -> 7L), 0L, 1L)
     println(s"Part 2: $result")
   }
 }
