@@ -73,6 +73,9 @@ class Cart(object):
             self.y
         )
 
+    def display_direction(self):
+        return self.nesw[self.direction]
+
 
 def next_collision_state(carts):
     coords = defaultdict(int)
@@ -81,6 +84,21 @@ def next_collision_state(carts):
         coords[(cart.x, cart.y)] += 1
 
     return [k for k, v in coords.items() if v > 1], carts
+
+
+def display(y, x, grid, carts):
+    result = ""
+    for row in range(y):
+        result += "\n"
+        for col in range(x):
+            cartsfound = [c for c in carts if (c.x, c.y) == (col, row)]
+            if len(cartsfound) == 1:
+                result += str(cartsfound[0].display_direction())
+            elif len(cartsfound) > 1:
+                result += str(len(cartsfound))
+            else:
+                result += grid.get((col, row))
+    print(result)
 
 
 if __name__ == '__main__':
