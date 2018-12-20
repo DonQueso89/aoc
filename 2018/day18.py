@@ -1,7 +1,6 @@
-import json
 import math
 import sys
-from collections import defaultdict, Counter
+from collections import Counter
 
 TREE = 0
 LUMBERYARD = 1
