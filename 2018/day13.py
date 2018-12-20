@@ -98,7 +98,6 @@ def display(y, x, grid, carts):
                 result += str(len(cartsfound))
             else:
                 result += grid.get((col, row))
-    print(result)
 
 
 if __name__ == '__main__':
@@ -131,4 +130,3 @@ if __name__ == '__main__':
         if len(collisions) > 0:
             carts = [cart for cart in carts if (cart.x, cart.y) not in collisions]
     print("Part 2: " + str(carts[0]))
-

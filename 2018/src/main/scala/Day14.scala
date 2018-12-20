@@ -38,6 +38,7 @@ object Solve extends App {
 
   @annotation.tailrec
   def solveNumLeft(number: Int, numLookBack: Int, recipes: Map[Long, Long], elfOneIdx: Long, elfTwoIdx: Long): Long = {
+    println(recipes.size)
     val numberCheck = (recipes.size - numLookBack to recipes.size - 1).map(
       recipes.getOrElse(_, 0)  
     ).mkString("")
