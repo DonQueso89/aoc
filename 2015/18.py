@@ -2,7 +2,7 @@ import copy
 import itertools
 
 # Process input. Grid becomes a list of lists.
-fptr = open("input18.txt")
+fptr = open("input18")
 grid = []
 for line in fptr:
     grid.append(list(line.rstrip())) 
