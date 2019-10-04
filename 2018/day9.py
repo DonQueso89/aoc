@@ -3,9 +3,7 @@ from collections import defaultdict
 from itertools import cycle
 
 
-if __name__ == '__main__':
-    data = open('input9').read().split()
-    num_players, num_marbles = int(data[0]), int(data[6] * int(sys.argv[1]))
+def solve1(num_players, num_marbles):
     players = cycle(range(num_players))
     scores = defaultdict(int)
     # idx -> marble
@@ -29,3 +27,18 @@ if __name__ == '__main__':
                 marbles.insert(insertion_idx, marble)
             marble_idx = insertion_idx
     print('Part 1: ' + str(sorted([(k, v) for k, v in scores.items()], key=lambda x: x[1])[-1]))
+    print(list(scores))
+
+
+def solve2(num_players, num_marbles):
+    """
+    Growth by 22 elems every 23 marbles
+    Index == ((((((0 + 2 % 2) + 2) % 2) + 2) % 2) ... -7) % 2
+    """
+    pass
+
+
+if __name__ == '__main__':
+    data = open('input9').read().split()
+    num_players, num_marbles = int(data[0]), int(data[6] * int(sys.argv[1]))
+    solve1(num_players, num_marbles)
