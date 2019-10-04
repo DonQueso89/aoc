@@ -64,7 +64,6 @@ class Unit(Cell):
         self.y = y
 
 
-
 class Goblin(Unit):
     is_goblin = True
 
@@ -87,12 +86,15 @@ def find_paths(origin, target, grid):
 
     :param: origin:: Unit
     :param: target:: Unit
-    :param: grid:: dict of shape {(x, y) => Cell()}
+    :param: grid:: dict of shape {(x, y, tx, ty) => Cell()}
 
     return: is_blocked:: bool, dict of cells adjacent to origin
         {
-            (x, y) => distance_from_target
+            (x, y, tx, ty) => distance_from_target
         }
+        where:
+            - x, y is  the coordinate of the move
+            - tx, ty is the coordinate of the target (we need this for the sort-key)
     """
     queue = {(target.x, target.y): 0}
     target_reached = False
@@ -113,7 +115,7 @@ def find_paths(origin, target, grid):
             queue[k] = v
 
         if target_reached:
-            return False, {(x, y): d for (x, y), d in queue.items() if (x, y) in [z for z in origin.adjacent()]}
+            return False, {(x, y, target.x, target.y): d for (x, y), d in queue.items() if (x, y) in [z for z in origin.adjacent()]}
 
         if not new_cells:
             return True, None
@@ -134,7 +136,7 @@ def attack_if_possible(player, grid):
     adjacent_cells = [grid[(px, py)] for px, py in player.adjacent()]
     eligible_for_attack = [p for p in adjacent_cells if p.is_enemy(player)]
     if eligible_for_attack:
-        victim = sorted(eligible_for_attack, key=lambda x: x.hp)[0]
+        victim = sorted(eligible_for_attack, key=lambda k: (k.hp, k.y, k.x))[0]
         victim.hp -= 3
         return victim
     return None
@@ -176,36 +178,40 @@ def solve(grid):
         for x, y in turn_order:
             # player may have died since start of round
             player = grid[(x, y)]
+            if not player.is_unit:
+                continue
+
+            enemies_in_range = [p for p in grid.values() if p.is_enemy(player)]
+            if not enemies_in_range:
+                return sum([x.hp for x in grid.values() if x.is_unit]), num_rounds
+
             # check if we can attack immediately
             victim = attack_if_possible(player, grid)
             if victim:
                 num_goblins, num_elves = funeral(victim, grid, num_goblins, num_elves)
                 continue
-            # check if we can move
-            if not can_move(player, grid):
-                continue
+
+            # Pre-filter enemies
+            enemies_in_range = [p for p in enemies_in_range if can_move(p, grid)]
+
             # determine the optimal move
-            enemies_in_range = [p for p in grid.values() if p.is_enemy(player) and can_move(p, grid)]
             possible_moves = {}
             for enemy in enemies_in_range:
                 blocked, paths = find_paths(player, enemy, grid)
                 if not blocked:
-                    for x, y in paths:
-                        dist = paths[(x, y)]
-                        if possible_moves.get((x, y), 99999) > dist:
-                            possible_moves[(x, y)] = dist
-            # Sort by  distance and then reading order
+                    for x, y, tx, ty in paths:
+                        dist = paths[(x, y, tx, ty)]
+                        possible_moves[(x, y, tx, ty)] = dist
+            # Sort by distance, then by target coordinate reading order, then by reading order of move coordinate
             if possible_moves:
-                x, y, _ = sorted([(x, y, d) for (x, y), d in possible_moves.items()], key=lambda k: (k[2], k[1], k[0]))[0]
+                x, y, _, _, _ = sorted([(x, y, tx, ty, d) for (x, y, tx, ty), d in possible_moves.items()], key=lambda k: (k[4], k[3], k[2], k[1], k[0]))[0]
                 player.move_to(x, y, grid)
+            else:
+                continue
             # Check if we can attack now
             victim = attack_if_possible(player, grid)
             if victim:
                 num_goblins, num_elves = funeral(victim, grid, num_goblins, num_elves)
-                continue
-            if num_goblins == 0 or num_elves == 0:
-                return sum([x.hp for x in grid.values() if x.is_unit]), num_rounds
-            print(num_goblins, num_elves)
         num_rounds += 1
         print("ROUND: {} OVER".format(str(num_rounds)))
 
