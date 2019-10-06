@@ -82,7 +82,9 @@ class Open(Cell):
 
 def find_paths(origin, target, grid):
     """
-    Get all possible paths from origin to target
+    Get all possible paths from origin to target.
+    Assume that shorter paths are found earlier so we can return
+    when we found the target.
 
     :param: origin:: Unit
     :param: target:: Unit

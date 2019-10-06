@@ -57,13 +57,7 @@ class Cart(object):
 
     def tick(self):
         road = self.grid[(self.x, self.y)]
-        d = self.direction_resolver[self.direction][road](
-            self.direction
-        )
-        if d < 0:
-            self.direction = 4 - abs(d)
-        else:
-            self.direction = d % 4
+        self.direction = self.direction_resolver[self.direction][road](self.direction) % 4
         self.x, self.y = self.next_position[self.direction](self.x, self.y)
 
     def __repr__(self):
@@ -73,31 +67,46 @@ class Cart(object):
             self.y
         )
 
-    def display_direction(self):
-        return self.nesw[self.direction]
+
+class Collision(Exception):
+    pass
 
 
-def next_collision_state(carts):
-    coords = defaultdict(int)
-    for cart in carts:
-        cart.tick()
-        coords[(cart.x, cart.y)] += 1
+class CartsByPosition(dict):
+    """
+    Keep track of carts by position.
+    If multiple carts are assigned to the same key, flag a collision.
+    """
+    def __init__(self, *args, **kwargs):
+        carts = kwargs.pop('carts')
+        super().__init__(self, *args, **kwargs)
+        for cart in carts:
+            self[(cart.x, cart.y)] = cart
 
-    return [k for k, v in coords.items() if v > 1], carts
+    def __setitem__(self, k, v):
+        """
+            If a collision happens, clean out the cart and dont assign it.
+        """
+        if k in self:
+            self.pop(k)
+            raise Collision
+        super().__setitem__(k, v)
 
 
-def display(y, x, grid, carts):
-    result = ""
-    for row in range(y):
-        result += "\n"
-        for col in range(x):
-            cartsfound = [c for c in carts if (c.x, c.y) == (col, row)]
-            if len(cartsfound) == 1:
-                result += str(cartsfound[0].display_direction())
-            elif len(cartsfound) > 1:
-                result += str(len(cartsfound))
-            else:
-                result += grid.get((col, row))
+def solve(carts, num_rows, num_cols):
+    collisions = []
+    while True:
+        for x, y in sorted(carts, key=lambda k: (k[1], k[0])):
+            cart = carts.pop((x, y), None)
+            # Cart may have been removed since start of tick
+            if cart:
+                cart.tick()
+                try:
+                    carts[(cart.x, cart.y)] = cart
+                except Collision:
+                    collisions.append((cart.x, cart.y))
+            if len(carts) == 1:
+                return collisions[0], [x for x in carts.keys()][0]
 
 
 if __name__ == '__main__':
@@ -117,16 +126,8 @@ if __name__ == '__main__':
 
     Cart.grid = grid
     collisions = []
+    carts = CartsByPosition(carts=carts)
+    first_collision, last_cart_pos = solve(carts, y + 1, x + 1)
 
-    while not collisions:
-        collisions, carts = next_collision_state(carts)
-
-    print("Part 1: " + str(collisions[0]))
-
-    carts = [cart for cart in carts if (cart.x, cart.y) not in collisions]
-
-    while len(carts) > 1:
-        collisions, carts = next_collision_state(carts)
-        if len(collisions) > 0:
-            carts = [cart for cart in carts if (cart.x, cart.y) not in collisions]
-    print("Part 2: " + str(carts[0]))
+    print("Part 1: " + str(first_collision))
+    print("Part 2: " + str(last_cart_pos))
