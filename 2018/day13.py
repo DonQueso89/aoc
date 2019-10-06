@@ -93,7 +93,7 @@ class CartsByPosition(dict):
         super().__setitem__(k, v)
 
 
-def solve(carts, num_rows, num_cols):
+def solve(carts):
     collisions = []
     while True:
         for x, y in sorted(carts, key=lambda k: (k[1], k[0])):
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     Cart.grid = grid
     collisions = []
     carts = CartsByPosition(carts=carts)
-    first_collision, last_cart_pos = solve(carts, y + 1, x + 1)
+    first_collision, last_cart_pos = solve(carts)
 
     print("Part 1: " + str(first_collision))
     print("Part 2: " + str(last_cart_pos))
