@@ -195,6 +195,8 @@ def solve(grid):
 
             # Pre-filter enemies
             enemies_in_range = [p for p in enemies_in_range if can_move(p, grid)]
+            if not enemies_in_range:
+                continue
 
             # determine the optimal move
             possible_moves = {}
