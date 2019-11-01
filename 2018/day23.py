@@ -29,6 +29,12 @@ def num_nanobots_in_range(nanobots):
     return in_range
 
 
+def solve():
+    # overlap == sum of radiuses > distance between bots
+    # search coordinate space for bot with smallest radius in maximum overlapping set
+    # Take the one closest to 0, 0
+
+
 if __name__ == '__main__':
     args = parser.parse_args()
     data = open(args.infile).read()
@@ -40,6 +46,5 @@ if __name__ == '__main__':
                 line
             ).split(',')
         ])
-    import ipdb; ipdb.set_trace();
     num_in_range = num_nanobots_in_range(nanobots)
     print("Part 1: " + str(num_in_range))

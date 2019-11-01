@@ -6,6 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Solve day 15')
 parser.add_argument("infile", type=str)
+parser.add_argument("day", type=int)
 
 
 class Cell:
@@ -98,18 +99,18 @@ def find_paths(origin, target, grid):
             - x, y is  the coordinate of the move
             - tx, ty is the coordinate of the target (we need this for the sort-key)
     """
-    queue = {(target.x, target.y): 0}
+    # x, y: dist, startx, starty, we keep the latter two to sort by in case of a shortest path tie
+    queue = {(x, y): (1, x, y) for x, y in target.adjacent() if grid[(x, y)].is_open}
     target_reached = False
-    done = False
-    while not done:
+    while True:
         new_cells = {}
-        for (cx, cy), distance in queue.items():
+        for (cx, cy), (distance, startx, starty) in queue.items():
             for x, y in grid[(cx, cy)].adjacent():
                 # we cant be out of bounds
                 # cuz there are surrounding walls
                 adjacent_cell = grid[(x, y)]
-                if adjacent_cell.is_open and queue.get((x, y), 999999) > distance + 1 and new_cells.get((x, y), 999999) > distance + 1:
-                    new_cells[(x, y)] = distance + 1
+                if adjacent_cell.is_open and queue.get((x, y), [999999])[0] > distance + 1 and new_cells.get((x, y), [999999])[0] > distance + 1:
+                    new_cells[(x, y)] = (distance + 1, startx, starty)
                 if adjacent_cell.x == origin.x and adjacent_cell.y == origin.y:
                     target_reached = True
 
@@ -117,7 +118,7 @@ def find_paths(origin, target, grid):
             queue[k] = v
 
         if target_reached:
-            return False, {(x, y, target.x, target.y): d for (x, y), d in queue.items() if (x, y) in [z for z in origin.adjacent()]}
+            return False, {(x, y, sx, sy): d for (x, y), (d, sx, sy) in queue.items() if (x, y) in [z for z in origin.adjacent()]}
 
         if not new_cells:
             return True, None
@@ -139,7 +140,7 @@ def attack_if_possible(player, grid):
     eligible_for_attack = [p for p in adjacent_cells if p.is_enemy(player)]
     if eligible_for_attack:
         victim = sorted(eligible_for_attack, key=lambda k: (k.hp, k.y, k.x))[0]
-        victim.hp -= 3
+        victim.hp -= player.ap
         return victim
     return None
 
@@ -198,7 +199,7 @@ def solve(grid):
             if not enemies_in_range:
                 continue
 
-            # determine the optimal move
+            # Determine the optimal move
             possible_moves = {}
             for enemy in enemies_in_range:
                 blocked, paths = find_paths(player, enemy, grid)
@@ -222,6 +223,82 @@ def solve(grid):
     raise Exception("Game did not end properly")
 
 
+def _solve2(grid, elf_attack_power):
+    """
+    :param: grid:: dict of shape {(x, y) => Cell()}
+
+    return:
+        sum_hp_remaining_units, num_rounds
+    """
+    num_rounds = 0
+    num_goblins = len([x for x in grid.values() if x.is_goblin])
+    num_elves = len([x for x in grid.values() if x.is_elf])
+    orig_num_elves = num_elves
+    for p in grid.values():
+        if p.is_elf:
+            p.ap = elf_attack_power
+
+    while True:
+        # sort players in reading order
+        turn_order = sorted([(p.x, p.y) for p in grid.values() if p.is_unit], key=lambda k: (k[1], k[0]))
+        for x, y in turn_order:
+            # player may have died since start of round
+            player = grid[(x, y)]
+            if not player.is_unit:
+                continue
+
+            enemies_in_range = [p for p in grid.values() if p.is_enemy(player)]
+            if not enemies_in_range:
+                return sum([x.hp for x in grid.values() if x.is_unit]), num_rounds
+
+            # check if we can attack immediately
+            victim = attack_if_possible(player, grid)
+            if victim:
+                num_goblins, num_elves = funeral(victim, grid, num_goblins, num_elves)
+                if num_elves < orig_num_elves:
+                    print("Elf casualty with AP {:d}".format(elf_attack_power))
+                    return None, None
+                continue
+
+            # Pre-filter enemies
+            enemies_in_range = [p for p in enemies_in_range if can_move(p, grid)]
+            if not enemies_in_range:
+                continue
+
+            # Determine the optimal move
+            possible_moves = {}
+            for enemy in enemies_in_range:
+                blocked, paths = find_paths(player, enemy, grid)
+                if not blocked:
+                    for x, y, tx, ty in paths:
+                        dist = paths[(x, y, tx, ty)]
+                        possible_moves[(x, y, tx, ty)] = dist
+            # Sort by distance, then by target coordinate reading order, then by reading order of move coordinate
+            if possible_moves:
+                x, y, _, _, _ = sorted([(x, y, tx, ty, d) for (x, y, tx, ty), d in possible_moves.items()], key=lambda k: (k[4], k[3], k[2], k[1], k[0]))[0]
+                player.move_to(x, y, grid)
+            else:
+                continue
+            # Check if we can attack now
+            victim = attack_if_possible(player, grid)
+            if victim:
+                num_goblins, num_elves = funeral(victim, grid, num_goblins, num_elves)
+        num_rounds += 1
+        print("ROUND: {} OVER".format(str(num_rounds)))
+
+    raise Exception("Game did not end properly")
+
+
+def solve2(args):
+    ap = 3
+    sum_hp_remaining, n_rounds = None, None
+    while n_rounds is None:
+        grid = prep_grid(args.infile)
+        ap += 1
+        sum_hp_remaining, n_rounds = _solve2(grid, ap)
+    return sum_hp_remaining, n_rounds
+
+
 def prep_grid(infile):
     grid = {}
     for y, line in enumerate(open(infile).read().splitlines()):
@@ -243,5 +320,8 @@ def prep_grid(infile):
 if __name__ == '__main__':
     args = parser.parse_args()
     grid = prep_grid(args.infile)
-    sum_hp_remaining, n_rounds = solve(grid)
-    print("Part 1: " + str(sum_hp_remaining * n_rounds), sum_hp_remaining, n_rounds)
+    sum_hp_remaining, n_rounds = {
+        1: lambda: solve(grid),
+        2: lambda: solve2(args)
+    }[args.day]()
+    print("Part {:d}: ".format(args.day) + str(sum_hp_remaining * n_rounds), sum_hp_remaining, n_rounds)
