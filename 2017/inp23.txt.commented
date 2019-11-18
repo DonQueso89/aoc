@@ -1,0 +1,34 @@
+set b 57
+set c b
+jnz a 2
+jnz 1 5
+mul b 100
+sub b -100000
+set c b
+sub c -17000
+set f 1 --> f is only reset when the 3rd loop recurses
+set d 2 -> 2nd loop itervar
+set e 2 -> 1st loop itervar
+set g d
+mul g e
+sub g b --> when d * e == b in the 1st loop, we set f=0 for the remainder of all 2nd loops
+jnz g 2
+set f 0
+sub e -1
+set g e
+sub g b --> 1st loop exits when e becomes equal to b, e is incremented by 1 every loop (55 loops a=0)
+jnz g -8 --> 1st loop recurse
+sub d -1 --> d increments by 1 every 2nd loop
+set g d
+sub g b --> 2nd loop exits when d becomes equal to b (55 loops when initial a=0)
+jnz g -13 --> 2nd loop recurse
+jnz f 2 --> f is always 0 when 2nd loop exits
+sub h -1 --> h is incremented by 1 every 3rd loop
+set g b
+sub g c -> 3rd loop exits when c becomes equal to b, b is incremented by 17 every 3rd loop
+jnz g 2
+jnz 1 3 --> Game over
+sub b -17
+jnz 1 -23
+
+Solution: sum([1 for i in range(105700, 122700 + 1, 17) if not isprime(i)])

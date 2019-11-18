@@ -98,7 +98,7 @@ def solve2(insequence, disksize):
             n += next_n
         grouped_checksum.append((p, n))
     checksum = grouped_checksum
-    
+
     print("Starting simplification")
     while num_bits % 2 == 0:
         if isinstance(checksum, list):

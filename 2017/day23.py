@@ -39,14 +39,6 @@ def next_state(register, pointer, instr, x, y, num_mults):
     return register, pointer, num_mults
 
 
-def fast_forward(var_to_minimize, new_register,  old_register):
-    diff = old_register[var_to_minimize] - new_register[var_to_minimize]
-    num_loops_until_zero = new_register[var_to_minimize] / diff
-    new_register = {k: v + (new_register[k] - old_register[k]) * num_loops_until_zero for k, v in new_register.items()}
-    new_register[var_to_minimize] = 0
-    return new_register
-
-
 def solve(register, instructions):
     pointer = 0
     num_mults = 0
@@ -65,32 +57,21 @@ def solve(register, instructions):
         )
 
 
-def solve2(register, instructions):
-    pointer = 0
-    loop_state = {}
-    while True:
-        try:
-            instr, x, y = instructions[pointer]
-        except IndexError:
-            return register
+def solve2():
+    """
+    This is just manually investigating and understanding the instructionset
+    """
+    s = 0
+    def isprime(n):
+        for i in range(2, n // 2):
+            if n % i == 0:
+                return False
+        return True
 
-        # going into a loop, store the pointer and state
-        if loop_state.get(pointer) is None and instr == 'jnz' and y < 0 and register.get(x, 0) != 0:
-            loop_state[pointer] = {k: v for k, v in register.items()}
-        # hitting the loop a second time, compute fastforward from stored state
-        elif loop_state.get(pointer) is not None and instr == 'jnz' and y < 0 and register.get(x, 0) != 0:
-            register = fast_forward(x, register, *loop_state[pointer])
-            del loop_state[pointer]
-        # if the x-value is a constant, we need to jump it so we cant fast forward
-
-        register, pointer, _ = next_state(
-            register,
-            pointer,
-            instr,
-            x,
-            y,
-            0
-        )
+    for y in range(105700, 122700 + 1, 17):
+        if not isprime(y):
+            s += 1
+    return s
 
 
 if __name__ == '__main__':
@@ -98,6 +79,4 @@ if __name__ == '__main__':
     inp = open(args.infile).read()
     register, instructions = prep_data(inp)
     print("Part 1: ", solve(register, instructions)[0])
-    register, instructions = prep_data(inp)
-    register['a'] = 1
-    print("Part 2: ", solve2(register, instructions)[1])
+    print("Part 2: {:d}".format(solve2()))

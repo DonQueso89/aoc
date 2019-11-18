@@ -30,14 +30,30 @@ valid_for_rock = set([CLIMBING_GEAR, TORCH])
 valid_for_wet = set([CLIMBING_GEAR, NEITHER])
 valid_for_narrow = set([TORCH, NEITHER])
 
-valid_for = {
+tools_for = {
     ROCK: valid_for_rock,
     WET: valid_for_wet,
     NARROW: valid_for_narrow
 }
 
+dm = {
+    ROCK: '.',
+    WET: '~',
+    NARROW: '|'
+}
 
-def neighbours(max_x, max_y, tx, ty, x, y):
+tm = {
+    NEITHER: 'N',
+    TORCH: 'F',
+    CLIMBING_GEAR: 'C',
+}
+
+
+def neighbours(cave_map, x, y, current_tool, visited):
+    """ 
+    Treat each possible (x, y, tool) combo as a separate vertex
+    """
+    candidates = set([])
     for offsetX, offsetY in [
         (0, 1),
         (1, 0),
@@ -45,38 +61,18 @@ def neighbours(max_x, max_y, tx, ty, x, y):
         (0, -1)
     ]:
         sx, sy = x + offsetX, y + offsetY
-        if (sx, sy) == (tx, ty):
-            yield (sx, sy)
-            break
-        if sx >= 0 and sx <= max_x and sy >= 0 and sy <= max_y:
-            yield (sx, sy)
-
-
-def possible_paths_with_costs(cave_map, neighbour_generator, x, y, current_tool):
-    """
-    For each path, return 3tuple of ((x, y), required tool, associated cost)
-    """
-    current_region = cave_map[(x, y)]
-    neighbours = {(nx, ny): cave_map[(nx, ny)] for nx, ny in neighbour_generator(x, y)}
-    can_switch_to = valid_for[current_region]
-    current_tool = set([current_tool])
-    neighbours_with_costs = []
-
-    for coordinate, neighbour_type in neighbours.items():
-        valid_for_neighbour = valid_for[neighbour_type]
-        # We can move to it without switching
-        if current_tool & valid_for_neighbour:
-            neighbours_with_costs.append((coordinate, list(current_tool)[0], 1))
+        if (sx, sy) not in cave_map:
             continue
-        # We can move to it by switching
-        switch_to = can_switch_to & valid_for_neighbour
-        if switch_to:
-            neighbours_with_costs.append((coordinate, list(switch_to)[0], 8))
+        if current_tool in tools_for[cave_map[(x + offsetX, y + offsetY)]]:
+            candidates.add((x + offsetX, y + offsetY, current_tool))
+    for tool in tools_for[cave_map[(x, y)]] - set([current_tool]):
+        candidates.add((x, y, tool))
 
-    return neighbours_with_costs
+    for c in candidates - visited:
+        yield c
 
 
-def get_erosion_level(erosion_levels, depth, x, y):
+def _get_erosion_level(erosion_levels, depth, x, y):
     if y == 0:
         return (x * 16807 + depth) % 20183
     if x == 0:
@@ -84,34 +80,25 @@ def get_erosion_level(erosion_levels, depth, x, y):
     return (erosion_levels[(x - 1, y)] * erosion_levels[(x, y - 1)] + depth) % 20183
 
 
-def distance_from_target(target, coord):
-    tx, ty = target
-    cx, cy = coord
-    return abs(tx - cx) + abs(ty - cy)
-
-
-def display(cave_map, tx, ty, cx, cy):
+def display(cave_map, tx, ty, cx, cy, tool):
     result = ""
     for y in range(0, max(cave_map.keys(), key=lambda k: k[1])[1] + 1):
         result += '\n'
         for x in range(0, max(cave_map.keys(), key=lambda k: k[0])[0] + 1):
             if (cx, cy) == (x, y):
-                result += " X"
+                result += " " + str(tm[tool])
             elif (tx, ty) == (x, y):
                 result += " T"
             else:
-                result += (" " + str(cave_map[(x, y)]))
+                result += (" " + str(dm[cave_map[(x, y)]]))
     print(result)
 
 
-
-if __name__ == '__main__':
-    args = parser.parse_args()
-    depth, tx, ty = args.depth, args.targetX, args.targetY
+def generate_cave_map(depth, tx, ty):
     erosion_levels = defaultdict(int)
-    erosion_levels[(0, 0)] = 0
+    erosion_levels[(0, 0)] = 0 + depth
 
-    get_erosion_level = partial(get_erosion_level, erosion_levels, depth)
+    get_erosion_level = partial(_get_erosion_level, erosion_levels, depth)
 
     # Calculate west and north borders first to avoid the overhead of checking
     # whether the coordinate is the cavemouth on every iteration
@@ -129,66 +116,75 @@ if __name__ == '__main__':
         for x in range(1, tx + 1):
             erosion_levels[(x, y)] = get_erosion_level(x, y)
 
-    erosion_levels[(tx, ty)] = 0
+    erosion_levels[(tx, ty)] = 0 + depth
     cave_map = {coordinate: el % 3 for coordinate, el in erosion_levels.items()}
-    risk_level = sum(list(cave_map.values()))
-    print("Part 1: " + str(risk_level))
+    return cave_map
 
-    neighbours_func = partial(neighbours, tx, ty, tx, ty)
-    get_paths_with_costs = partial(
-        possible_paths_with_costs,
-        cave_map,
-        neighbours_func
-    )
-    removed_from_target = partial(distance_from_target, (tx, ty))
 
-    last = (0, 0)
-    x, y = last
-    current_tool = TORCH
-    total_cost = 0
-    max_x, max_y = tx, ty
-    display = partial(display, cave_map, tx, ty)
-    while (x, y) != (tx, ty):
-        # Dont consider where we came from
-        display(x, y)
-        print(total_cost)
-        paths = [p for p in get_paths_with_costs(x, y, current_tool) if p[0] != last]
+def solve(depth, tx, ty):
+    return sum(list(generate_cave_map(depth, tx, ty).values()))
 
-        low_cost = [p for p in paths if p[2] == 1]
-        high_cost = [p for p in paths if p[2] == 8]
-        candidates = low_cost or high_cost
-        last = (x, y)
-        # Only 1 optimal candidate
-        if len(candidates) == 1:
-            next_region = candidates[0]
-            x, y = next_region[0]
-            current_tool = next_region[1]
-            total_cost += next_region[2]
-        # Multiple optimal candidates, choose the one closest to the target
-        elif len(candidates) > 1:
-            next_region = sorted(candidates, key=lambda k: removed_from_target(k[0]))[0]
-            x, y = next_region[0]
-            current_tool = next_region[1]
-            total_cost += next_region[2]
 
-        # Increase reach when necessary
-        if x == max_x or y == max_y:
-            max_x += 1
-            max_y += 1
+def _distance(c1, c2):
+    distance = 0
+    x1, y1, t1 = c1
+    x2, y2, t2 = c2
+    if (x1, y1) != (x2, y2):
+        distance += 1
+    if t1 != t2:
+        distance += 7
+    return distance
 
-            # East border
-            for sy in range(0, max_y + 1):
-                for sx in range(max_x, max_x + 1):
-                    cave_map[(sx, sy)] = get_erosion_level(sx, sy) % 3
 
-            # South border
-            for sy in range(max_y, max_y + 1):
-                for sx in range(0, max_x + 1):
-                    cave_map[(sx, sy)] = get_erosion_level(sx, sy) % 3
+def dijkstra(start, target, cave_map):
+    """
+    Init priority queue with start node at 0 and all others at Infinity
+    PQ keeps track of where we've been by storing the previous node and the shortest distance
+    1) For each neighbour of node with closest distance
+    2) If distance to next node is smaller than current distance in PQ, replace
+        with distance and this node as previous node
+    Every time all neighbours for the node under consideration have been checked,
+    remove the node from the PQ
 
-            # Update neighbours func
-            neighbours_func = partial(neighbours, max_x, max_y, tx, ty)
-        time.sleep(2)
-    if current_tool != TORCH:
-        total_cost += 7
-    print("Part 2: " + str(total_cost))
+    """
+    large_int = 1 << 64
+    visited = set()
+    priority_queue = {start: (0, None)}  # {node: (distance_from_source, previous_node)}
+    _neighbours = partial(neighbours, cave_map)
+
+    while True:
+        candidate, (shortest_path, _) = min(
+            [(k, v) for k, v in priority_queue.items() if k not in visited],
+            key=lambda ky: ky[1][0]
+        )
+        for neighbour in _neighbours(*candidate, visited=visited):
+            distance = _distance(neighbour, candidate)
+            if shortest_path + distance < priority_queue.get(neighbour, (large_int, None))[0]:
+                priority_queue[neighbour] = (shortest_path + distance, candidate)
+        visited.add(candidate)
+        print(len(priority_queue), len(visited))
+
+        # Assume that there is a path
+        if target in visited:
+            path = [target]
+            node = target
+            while node is not None:
+                node = priority_queue[node][1]
+                path.append(node)
+            for node in reversed(path):
+                input('continue?')
+                if node is not None:
+                    display(cave_map, target[0], target[1], *node)
+            return priority_queue[target][0]
+
+
+def solve2(depth, tx, ty):
+    cave_map = generate_cave_map(depth, depth // 20, depth // 20)
+    return dijkstra((0, 0, TORCH), (tx, ty, TORCH), cave_map)
+
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    depth, tx, ty = args.depth, args.targetX, args.targetY
+    print("Part 1: " + str(solve(depth, tx, ty)))
+    print("Part 2: " + str(solve2(depth, tx, ty)))
