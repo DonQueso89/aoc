@@ -157,15 +157,14 @@ def dijkstra(start, target, cave_map):
             [(k, v) for k, v in priority_queue.items() if k not in visited],
             key=lambda ky: ky[1][0]
         )
+        visited.add(candidate)
         for neighbour in _neighbours(*candidate, visited=visited):
             distance = _distance(neighbour, candidate)
             if shortest_path + distance < priority_queue.get(neighbour, (large_int, None))[0]:
                 priority_queue[neighbour] = (shortest_path + distance, candidate)
-        visited.add(candidate)
-        print(len(priority_queue), len(visited))
 
         # Assume that there is a path
-        if target in visited:
+        if len(visited) == len(cave_map) * 2:
             path = [target]
             node = target
             while node is not None:
