@@ -1,5 +1,6 @@
 import time
 import argparse
+import heapq
 from collections import defaultdict
 from functools import partial
 
@@ -49,7 +50,7 @@ tm = {
 }
 
 
-def neighbours(cave_map, x, y, current_tool, visited):
+def neighbours(cave_map, x, y, current_tool):
     """ 
     Treat each possible (x, y, tool) combo as a separate vertex
     """
@@ -63,12 +64,12 @@ def neighbours(cave_map, x, y, current_tool, visited):
         sx, sy = x + offsetX, y + offsetY
         if (sx, sy) not in cave_map:
             continue
-        if current_tool in tools_for[cave_map[(x + offsetX, y + offsetY)]]:
-            candidates.add((x + offsetX, y + offsetY, current_tool))
+        if current_tool in tools_for[cave_map[(sx, sy)]]:
+            candidates.add((sx, sy, current_tool))
     for tool in tools_for[cave_map[(x, y)]] - set([current_tool]):
         candidates.add((x, y, tool))
 
-    for c in candidates - visited:
+    for c in candidates:
         yield c
 
 
@@ -91,7 +92,24 @@ def display(cave_map, tx, ty, cx, cy, tool):
                 result += " T"
             else:
                 result += (" " + str(dm[cave_map[(x, y)]]))
-    print(result)
+
+
+def display_queue(pq, cave_map, tx, ty, tt, sx, sy, st, visited):
+    max_x = max(pq, key=lambda k: k[0])[0]
+    max_y = max(pq, key=lambda k: k[1])[1]
+    for y in range(max_y + 1):
+        line = ""
+        for x in range(max_x + 1):
+            for tool in tools_for[cave_map[(x, y)]]:
+                if (x, y, tool) == (tx, ty, tt):
+                    line += ("||%04d||" % pq.get((x, y, tool), (0, 0))[0])
+                elif (x, y, tool) == (sx, sy, st):
+                    line += ("->%04d<-" % pq.get((x, y, tool), (0, 0))[0])
+                elif (x, y, tool) in visited:
+                    line += (" <%04d> " % pq.get((x, y, tool), (0, 0))[0])
+                else:
+                    line += ("  %04d  " % pq.get((x, y, tool), (0, 0))[0])
+            print(line)
 
 
 def generate_cave_map(depth, tx, ty):
@@ -148,33 +166,24 @@ def dijkstra(start, target, cave_map):
 
     """
     large_int = 1 << 64
-    visited = set()
-    priority_queue = {start: (0, None)}  # {node: (distance_from_source, previous_node)}
+    pq = []  # {node: (distance_from_source, previous_node)}
+    push = heapq.heappush
+    pop = heapq.heappop
+    push(pq, (0, start))
+    shortest_paths = {}  # keep track of final shortest paths
     _neighbours = partial(neighbours, cave_map)
+    while pq:
+        distance, candidate = pop(pq)
+        if candidate in shortest_paths:
+            continue
+        shortest_paths[candidate] = distance
+        if candidate == target:
+            return shortest_paths[target]
 
-    while True:
-        candidate, (shortest_path, _) = min(
-            [(k, v) for k, v in priority_queue.items() if k not in visited],
-            key=lambda ky: ky[1][0]
-        )
-        visited.add(candidate)
-        for neighbour in _neighbours(*candidate, visited=visited):
-            distance = _distance(neighbour, candidate)
-            if shortest_path + distance < priority_queue.get(neighbour, (large_int, None))[0]:
-                priority_queue[neighbour] = (shortest_path + distance, candidate)
-
-        # Assume that there is a path
-        if len(visited) == len(cave_map) * 2:
-            path = [target]
-            node = target
-            while node is not None:
-                node = priority_queue[node][1]
-                path.append(node)
-            for node in reversed(path):
-                input('continue?')
-                if node is not None:
-                    display(cave_map, target[0], target[1], *node)
-            return priority_queue[target][0]
+        for neighbour in list(_neighbours(*candidate)):
+            distance += _distance(neighbour, candidate)
+            if distance < shortest_paths.get(neighbour, large_int):
+                shortest_paths[neighbour] = distance
 
 
 def solve2(depth, tx, ty):
