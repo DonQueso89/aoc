@@ -1,50 +1,38 @@
 import argparse
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument("infile", type=str)
 
 
-def prep_data(data):
-    instructions = []
-    for x in data.splitlines():
-        instruction = x.split()
-        instructions.append(
-            {
-                'cpy': lambda i: (i[0], int(i[1]) if i[1][-1].isdigit() else i[1], int(i[2]) if i[2][-1].isdigit() else i[2]),
-                'jnz': lambda i: (i[0], int(i[1]) if i[1][-1].isdigit() else i[1], int(i[2]) if i[2][-1].isdigit() else i[2]),
-                'inc': lambda i: (i[0], int(i[1]) if i[1].isdigit() else i[1]),
-                'dec': lambda i: (i[0], int(i[1]) if i[1].isdigit() else i[1]),
-            }[instruction[0]](instruction)
-        )
-    return {'a': 0, 'b': 0, 'c': 0, 'd': 0}, instructions
+def prep_data(blob):
+    return [tuple([int(y) if y.lstrip('-').isdigit() else y for y in x.split()]) for x in blob.splitlines()]
 
 
-def solve(register, instructions):
+def solve(instructions, register):
+    eof = len(instructions)
     pointer = 0
-    print(instructions)
-    while True:
-        try:
-            i, x, y = instructions[pointer]
-        except IndexError:
-            return register
-        except ValueError:
-            i, x = instructions[pointer]
-
-        pointer_offset = 1
-        if i == 'cpy':
+    while pointer < eof:
+        offset = 1
+        instr, args = instructions[pointer][0], instructions[pointer][1:]
+        if pointer == 16:
+            print(register, instr, args)
+        if instr == 'cpy':
+            x, y = args
             register[y] = register.get(x, x)
-        elif i == 'inc':
-            register[x] += 1
-        elif i == 'dec':
-            register[x] -= 1
-        elif i == 'jnz' and x != 0:
-            pointer_offset = y
+        elif instr == 'jnz':
+            x, y = args
+            if register.get(x, x) != 0:
+                offset = y
         else:
-            raise ValueError('Unknown instruction')
-        pointer += pointer_offset
+            x = args[0]
+            register[x] = register[x] + 1 if instr == 'inc' else register[x] - 1
+        pointer += offset
+    return register['a']
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    register, instructions = prep_data(open(args.infile).read())
-    print("Part 1: ", solve(register, instructions)['a'])
+    instructions = prep_data(open(args.infile).read())
+    print('Part 1: {:d}'.format(solve(instructions, {x: 0 for x in 'abcd'})))
+    print('Part 2: {:d}'.format(solve(instructions, {'a': 0, 'b': 0, 'c': 1, 'd': 0})))

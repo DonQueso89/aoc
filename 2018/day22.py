@@ -69,8 +69,7 @@ def neighbours(cave_map, x, y, current_tool, visited):
     for tool in tools_for[cave_map[(x, y)]] - set([current_tool]):
         candidates.add((x, y, tool))
 
-    for c in candidates - visited:
-        yield c
+    return candidates - visited
 
 
 def _get_erosion_level(erosion_levels, depth, x, y):
@@ -172,7 +171,6 @@ def dijkstra(start, target, cave_map):
     push(pq, (0, start))
     shortest_paths = {}  # keep track of final shortest paths
     seen = {}
-    _neighbours = partial(neighbours, cave_map)
     while pq:
         distance, candidate = pop(pq)
         if candidate in shortest_paths:
@@ -180,20 +178,21 @@ def dijkstra(start, target, cave_map):
 
         # store final value for candidate vertex
         shortest_paths[candidate] = distance
-        if target in shortest_paths:
-            print(shortest_paths[target])
 
-        for neighbour in list(_neighbours(*candidate, visited=set(shortest_paths))):
+        for neighbour in list(neighbours(
+                cave_map,
+                *candidate,
+                visited=set(shortest_paths)
+            )):
             uv_distance = distance + _distance(neighbour, candidate)
-            if uv_distance < seen.get(neighbour, large_int):
+            if uv_distance <= seen.get(neighbour, large_int):
                 seen[neighbour] = uv_distance
                 push(pq, (uv_distance, neighbour))
     return shortest_paths[target]
 
 
 def solve2(depth, tx, ty):
-    cave_map = generate_cave_map(depth, depth // 8, depth // 8)
-    print("INIT")
+    cave_map = generate_cave_map(depth, tx + 300, ty + 300)
     return dijkstra((0, 0, TORCH), (tx, ty, TORCH), cave_map)
 
 
