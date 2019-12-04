@@ -50,7 +50,7 @@ tm = {
 }
 
 
-def neighbours(cave_map, x, y, current_tool):
+def neighbours(cave_map, x, y, current_tool, visited):
     """ 
     Treat each possible (x, y, tool) combo as a separate vertex
     """
@@ -69,7 +69,7 @@ def neighbours(cave_map, x, y, current_tool):
     for tool in tools_for[cave_map[(x, y)]] - set([current_tool]):
         candidates.add((x, y, tool))
 
-    for c in candidates:
+    for c in candidates - visited:
         yield c
 
 
@@ -171,23 +171,29 @@ def dijkstra(start, target, cave_map):
     pop = heapq.heappop
     push(pq, (0, start))
     shortest_paths = {}  # keep track of final shortest paths
+    seen = {}
     _neighbours = partial(neighbours, cave_map)
     while pq:
         distance, candidate = pop(pq)
         if candidate in shortest_paths:
             continue
-        shortest_paths[candidate] = distance
-        if candidate == target:
-            return shortest_paths[target]
 
-        for neighbour in list(_neighbours(*candidate)):
-            distance += _distance(neighbour, candidate)
-            if distance < shortest_paths.get(neighbour, large_int):
-                shortest_paths[neighbour] = distance
+        # store final value for candidate vertex
+        shortest_paths[candidate] = distance
+        if target in shortest_paths:
+            print(shortest_paths[target])
+
+        for neighbour in list(_neighbours(*candidate, visited=set(shortest_paths))):
+            uv_distance = distance + _distance(neighbour, candidate)
+            if uv_distance < seen.get(neighbour, large_int):
+                seen[neighbour] = uv_distance
+                push(pq, (uv_distance, neighbour))
+    return shortest_paths[target]
 
 
 def solve2(depth, tx, ty):
-    cave_map = generate_cave_map(depth, depth // 20, depth // 20)
+    cave_map = generate_cave_map(depth, depth // 8, depth // 8)
+    print("INIT")
     return dijkstra((0, 0, TORCH), (tx, ty, TORCH), cave_map)
 
 
