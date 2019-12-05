@@ -85,18 +85,21 @@ def prep_data():
         exec("clay.append(dict({}))".format(line))
 
     grid = {}
+    min_y = 1 << 64
     for c in clay:
         try:
             x = list(c['x'])
             y = c['y']
+            min_y = min(min_y, y)
             for sx in x:
                 grid[(sx, y)] = CLAY
         except TypeError:
             y = list(c['y'])
             x = c['x']
             for sy in y:
+                min_y = min(min_y, sy)
                 grid[(x, sy)] = CLAY
-    return grid
+    return grid, min_y
 
 
 NORTH = 0
@@ -105,7 +108,7 @@ SOUTH = 2
 WEST = 3
 
 
-def solve(grid):
+def solve(grid, min_y):
     """
     set potential_rest_reference to None, Go S
     If I can't go S, append splitpoint to queue and set direction to W
@@ -145,11 +148,13 @@ def solve(grid):
                         x, y = splitpoint_queue.pop()
                     else:
                         write(grid, x, y)
-                        return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if k[1] > 0 and k[1] <= max_y])
+                        return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if min_y <= k[1] <= max_y]), sum([v in (WATER_AT_REST,) for k, v in grid.items() if min_y <= k[1] <= max_y])
+
                 continue
             else:
                 write(grid, x, y)
-                return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if k[1] > 0 and k[1] <= max_y])
+                return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if min_y <= k[1] <= max_y]), sum([v in (WATER_AT_REST,) for k, v in grid.items() if min_y <= k[1] <= max_y])
+
 
         next_area = grid.get((next_x, next_y), SAND)
         area_below = grid.get(dirs[SOUTH](x, y), SAND)
@@ -168,11 +173,13 @@ def solve(grid):
                         x, y = splitpoint_queue.pop()
                     else:
                         write(grid, x, y)
-                        return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if k[1] > 0 and k[1] <= max_y])
+                        return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if min_y <= k[1] <= max_y]), sum([v in (WATER_AT_REST,) for k, v in grid.items() if min_y <= k[1] <= max_y])
+
                 continue
             else:
                 write(grid, x, y)
-                return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if k[1] > 0 and k[1] <= max_y])
+                return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if min_y <= k[1] <= max_y]), sum([v in (WATER_AT_REST,) for k, v in grid.items() if min_y <= k[1] <= max_y])
+
         elif direction == SOUTH and next_area in (CLAY, WATER_AT_REST):
             grid[(x, y)] = MOVING_WATER
             splitpoint_queue.append((x, y))
@@ -190,7 +197,7 @@ def solve(grid):
         elif direction == WEST and next_area == CLAY:
             grid[(x, y)] = MOVING_WATER
             potential_bassin_ref = (x, y)
-            x, y = splitpoint_queue.pop()
+            x, y = splitpoint_queue[-1]
             direction = EAST
         elif direction == EAST and next_area == CLAY and potential_bassin_ref is None:
             """
@@ -209,12 +216,14 @@ def solve(grid):
                         x, y = splitpoint_queue.pop()
                     else:
                         write(grid, x, y)
-                        return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if k[1] > 0 and k[1] <= max_y])
+                        return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if min_y <= k[1] <= max_y]), sum([v in (WATER_AT_REST,) for k, v in grid.items() if min_y <= k[1] <= max_y])
+
 
                 continue
             else:
                 write(grid, x, y)
-                return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if k[1] > 0 and k[1] <= max_y])
+                return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if min_y <= k[1] <= max_y]), sum([v in (WATER_AT_REST,) for k, v in grid.items() if min_y <= k[1] <= max_y])
+
         elif direction == EAST and next_area in (SAND, MOVING_WATER):
             grid[(x, y)] = MOVING_WATER
             x, y = next_x, next_y
@@ -223,31 +232,17 @@ def solve(grid):
             for _x in range(ref_x, x + 1):
                 grid[(_x, y)] = WATER_AT_REST
             potential_bassin_ref = None
+            # Go back to where we entered the cup and go up
+            x, y = splitpoint_queue.pop()
             x, y = dirs[NORTH](x, y)
             direction = WEST
             splitpoint_queue.append((x, y))
         else:
-            grid[(x, y)] = MOVING_WATER
-            print(potential_bassin_ref)
-            print(direction)
-            print(splitpoint_queue)
-            display(grid, x, y)
-            input('go')
-            if splitpoint_queue:
-                x, y = splitpoint_queue.pop()
-                direction = EAST
-                while grid[(x, y)] == WATER_AT_REST:
-                    if splitpoint_queue:
-                        x, y = splitpoint_queue.pop()
-                    else:
-                        write(grid, x, y)
-                        return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if k[1] > 0 and k[1] <= max_y])
-                continue
-            else:
-                write(grid, x, y)
-                return sum([v in (WATER_AT_REST, MOVING_WATER) for k, v in grid.items() if k[1] > 0 and k[1] <= max_y])
+            raise Exception("Hit unknown case")
+        #display(grid, x, y)
+        #time.sleep(0.01)
 
 
 if __name__ == '__main__':
-    grid = prep_data()
-    print("Part 1: {:d}".format(solve(grid)))
+    grid, min_y = prep_data()
+    print("Part 1: {:d}\nPart 2: {:d}".format(*solve(grid, min_y)))
