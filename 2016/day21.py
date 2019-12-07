@@ -71,6 +71,10 @@ rotate based on position of letter c
         elif 'move position' in scramble:
             s = scramble.split()
             s, e = int(s[-4]), int(s[-1])
+            x = password[2]
+            password = password[:s] + password[s:e] + x + password[e:]
+
+
         else:
             raise Exception('hit unknown operation')
 

@@ -8,16 +8,12 @@ parser.add_argument('infile', type=str)
 parser.add_argument('input', type=int)
 
 
-POSITION_MODE = 0
-VALUE_MODE = 1
-
-
 def prep_data(blob):
     return [int(x) for x in blob.split(',')]
 
 
-def solve(data, _input):
-    pointer = 0
+def intcode_runtime(data, _inputs, pointer, feedback_mode):
+    _inputs = _inputs[::-1]
     diagnostic = 0
     while data[pointer] != 99:
         op = data[pointer]
@@ -46,7 +42,7 @@ def solve(data, _input):
             pointer += 4
         elif optype == 3:
             o = data[pointer+1]
-            data[o] = _input
+            data[o] = _inputs.pop()
             pointer += 2
         elif optype == 4:
             o = data[pointer+1]
@@ -57,6 +53,8 @@ def solve(data, _input):
                 o = data[o]
             diagnostic = o
             pointer += 2
+            if feedback_mode:
+                return o, pointer, data
         elif optype == 5:
             a, b = data[pointer+1:pointer+3]
             op -= optype
@@ -114,10 +112,16 @@ def solve(data, _input):
         else:
             raise Exception("hit unknown case")
 
+    if feedback_mode:
+        return diagnostic, None, None
     return diagnostic
+
+
+def solve(data, _inputs):
+    return intcode_runtime(data, _inputs)
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
     data = prep_data(open(args.infile).read())
-    print("Diagnostic: {:d}".format(solve(data, args.input)))
+    print("Diagnostic: {:d}".format(solve(data, [args.input])))
