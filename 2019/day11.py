@@ -14,7 +14,9 @@ parser.add_argument('input', type=int)
 dirs = 'SWNE'
 
 
-def display(grid):
+def display(grid, mapping=None):
+    if mapping is None:
+        mapping = {0: ' ', 1: '$'}
     max_x, max_y = max(grid, key=lambda k: k[0])[0], max(grid, key=lambda k: k[1])[1]
     min_x, min_y = min(grid, key=lambda k: k[0])[0], min(grid, key=lambda k: k[1])[1]
     print("$" * (max_x - min_x))
@@ -22,7 +24,7 @@ def display(grid):
     for y in range(min_y, max_y + 1):
         line = ''
         for x in range(min_x, max_x + 1):
-            line += {0: '$', 1: ' '}[grid[(x, y)]]
+            line += mapping[grid[(x, y)]]
         lines.append(line)
     for line in reversed(lines):
         print(line)
