@@ -45,10 +45,11 @@ def resolve_inputs(modes, inputs, relative_base, data):
     return resolved_inputs
 
 
-def intcode_runtime(data, _inputs, pointer=None, feedback_mode=False):
+def intcode_runtime(data, _inputs, pointer=None, feedback_mode=False, relative_base=None):
     _inputs = _inputs[::-1]
     diagnostic = 0
-    relative_base = 0
+    if relative_base is None:
+        relative_base = 0
     if pointer is None:
         pointer = 0
 
@@ -100,7 +101,7 @@ def intcode_runtime(data, _inputs, pointer=None, feedback_mode=False):
             diagnostic = o
             pointer += 2
             if feedback_mode:
-                return o, pointer, data
+                return o, pointer, data, relative_base
             print(o)
         elif optype == 5:
             a, b = data[pointer+1], data[pointer+2]
@@ -174,7 +175,7 @@ def intcode_runtime(data, _inputs, pointer=None, feedback_mode=False):
             raise Exception("hit unknown case")
 
     if feedback_mode:
-        return diagnostic, None, None
+        return diagnostic, None, None,None
     return diagnostic
 
 
