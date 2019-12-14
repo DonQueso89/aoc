@@ -57,7 +57,14 @@ def solve(asteroid_map):
 
     laser_base, visible = max(in_sight.items(), key=lambda k: len(k[1]))
 
-    return len(visible), 0
+    def sort_by_angle(k):
+        k = math.atan2(laser_base[1] - k[1], laser_base[0] - k[0])
+        if -math.pi <= k < math.pi / 2:
+            return k + math.pi * 2.01
+        return k - math.pi / 2
+
+    visible = sorted(visible, key=sort_by_angle)
+    return len(visible), visible[199][0] * 100 + visible[199][1]
 
 
 if __name__ == '__main__':
