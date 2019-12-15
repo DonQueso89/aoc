@@ -3,7 +3,6 @@
 import argparse
 import math
 from collections import defaultdict
-from functools import reduce
 
 
 parser = argparse.ArgumentParser()
@@ -21,12 +20,12 @@ def prep_data(blob):
     return reactions
 
 
-def resolve_deps(reactions, in_leftovers=defaultdict(int)):
+def resolve_deps(reactions, fuel_required=1):
     required_for_fuel = defaultdict(int, reactions.pop('FUEL')[1])
-    leftovers = defaultdict(int)
+    required_for_fuel = defaultdict(int, {k: v * fuel_required for k, v in required_for_fuel.items()})
     while True:
         if all([x == 'ORE' for x in required_for_fuel]):
-            return required_for_fuel['ORE'], leftovers
+            return required_for_fuel['ORE']
 
         dependencies = set()
         for g in reactions:
@@ -35,28 +34,38 @@ def resolve_deps(reactions, in_leftovers=defaultdict(int)):
 
         # Resolve chemicals only when nothing depends on them
         resolvable = [x for x in required_for_fuel if x not in dependencies and x != 'ORE']
+
         for chemical in resolvable:
-            num_required = math.ceil(required_for_fuel.pop(chemical) - in_leftovers[chemical])
+            num_required = math.ceil(required_for_fuel.pop(chemical))
             num_producable, dependencies = reactions.pop(chemical)
-            multiplier_raw = num_required / num_producable
-            multiplier = math.ceil(multiplier_raw)
-            excess = multiplier_raw - multiplier
+            multiplier = math.ceil(num_required / num_producable)
 
             for dependency, d_required in dependencies:
                 required_for_fuel[dependency] += (multiplier * d_required)
-                leftovers[dependency] += (excess * d_required)
 
 
 def solve(reactions):
-    ore = 1000000000000
-    first, leftovers = resolve_deps({k: v for k, v in reactions.items()})
-    ore -= first
-    fuel = 1
-    while ore > 0:
-        required, leftovers = resolve_deps({k: v for k, v in reactions.items()})
-        ore -= required
-        fuel += 1
-    return first, fuel
+    def reactory():
+        return {k: v for k, v in reactions.items()}
+    single_fuel = resolve_deps(reactory())
+    ore_available = 1000000000000
+    lower_bound, upper_bound = 0, ore_available
+    while True:
+        num_fuel = (upper_bound + lower_bound) // 2
+        ore_required = resolve_deps(reactory(), num_fuel)
+
+        if ore_required == ore_available:
+            return single_fuel, num_fuel
+
+        if ore_required < ore_available:
+            if resolve_deps(reactory(), num_fuel + 1) >= ore_available:
+                return single_fuel, num_fuel
+            lower_bound = num_fuel
+        elif ore_required > ore_available:
+            if resolve_deps(reactory(), num_fuel - 1) <= ore_available:
+                return single_fuel, num_fuel - 1
+            upper_bound = num_fuel
+
 
 if __name__ == '__main__':
     args = parser.parse_args()
