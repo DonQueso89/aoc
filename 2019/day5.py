@@ -175,7 +175,8 @@ def intcode_runtime(data, _inputs, pointer=None, feedback_mode=False, relative_b
             raise Exception("hit unknown case")
 
     if feedback_mode:
-        return diagnostic, None, None,None
+        return diagnostic, None, None, None
+
     return diagnostic
 
 

@@ -27,7 +27,7 @@ def solve(data, n_phases, repetitions):
     result = np.ndarray((1, m))
     result[:] = data
     transform = np.ndarray((m, m))
-    print(m)
+    print(transform)
 
     for x in range(m):
         pattern = cycle(sum(zip(*[rep for j in range(x + 1)]), ()))
