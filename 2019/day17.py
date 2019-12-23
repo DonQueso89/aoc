@@ -173,7 +173,7 @@ def solve(program):
                 )
             line = ''
             line += chr(output)
-        elif output > 256:
+        elif output > 128:
             break
         output, pointer, program, relative_base = intcode_runtime(
             data=program,
