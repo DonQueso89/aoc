@@ -25,22 +25,24 @@ def prep_data(blob):
 
 
 def solve(instructions):
-    idxs = list(range(10007))
-    l = 10007
+    idx = 5
+    size = 10
     for func, n in instructions:
         if func == NEW:
-            idxs = idxs[::-1]
+            idx = size - idx - 1
         elif func == CUT:
-            idxs = idxs[n:] + idxs[:n]
+            if n >= 0 and idx < n:
+                idx = size - (n - idx)
+            elif n >= 0 and idx >= n:
+                idx -= n
+            elif n < 0 and size + n < idx:
+                idx = idx - (size + n)
+            elif n < 0 and size + n > idx:
+                idx = size - ((size + n) - idx)
         elif func == INCREMENT:
-            _idxs = [None] * 10007
-            i = 0
-            for x in idxs:
-                _idxs[i] = x
-                i += n
-                i %= l
-            idxs = _idxs
-    return idxs.index(2019)
+            idx += idx * n
+            idx %= size
+    return idx
 
 
 if __name__ == '__main__':
