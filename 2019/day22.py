@@ -45,29 +45,23 @@ def solve(instructions):
 
 
 def solve2(instructions):
-    idx = 2020
-    size = 119315717514047
-    cnt = 0
-    s = set()
-    while cnt < 101741582076661:
-        for func, n in instructions:
-            if func == NEW:
-                idx = size - idx - 1
-            elif func == CUT:
-                split = n
-                if split < 0:
-                    split += size
-                if idx < split:
-                    idx = size - (split - idx)
-                elif idx >= split:
-                    idx -= split
-            elif func == INCREMENT:
-                idx = idx * n
-                idx %= size
-        if idx in s:
-            s.add(idx)
-            print(len(s))
-        cnt += 1
+    idx = 2019
+    size = 10007
+    equation = "2019"
+    for func, n in instructions:
+        if func == NEW:
+            idx = size - idx - 1
+        elif func == CUT:
+            split = n
+            if split < 0:
+                split += size
+            if idx < split:
+                idx = size - (split - idx)
+            elif idx >= split:
+                idx -= split
+        elif func == INCREMENT:
+            idx = idx * n
+            idx %= size
     return idx
 
 

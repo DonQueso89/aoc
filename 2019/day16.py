@@ -15,27 +15,27 @@ def prep_data(blob):
     return [int(x) for x in blob.strip()]
 
 
-def solve(data, n_phases, repetitions):
-    """
-    1xm dot mxm -> 1xm
-    """
+def get_transform(m):
     rep = [0, 1, 0, -1]
-    offset = int("".join(map(str, data[:7]))) + 1
-    data *= repetitions
-    m = len(data)
-
-    result = np.ndarray((1, m))
-    result[:] = data
     transform = np.ndarray((m, m))
-    print(transform)
-
     for x in range(m):
         pattern = cycle(sum(zip(*[rep for j in range(x + 1)]), ()))
         next(pattern)
 
         for y in range(m):
             transform[y][x] = next(pattern)
-    print("done compiling")
+    return transform
+
+
+def solve(data, n_phases, repetitions):
+    """
+    1xm dot mxm -> 1xm
+    """
+    data *= repetitions
+    m = len(data)
+    result = np.ndarray((1, m))
+    result[:] = data
+    transform = get_transform(m)
 
     while n_phases:
         result = np.mod(abs(np.dot(result, transform)), 10)
@@ -43,7 +43,7 @@ def solve(data, n_phases, repetitions):
         print(n_phases)
 
     result = result[0].tolist()
-    return "".join(map(lambda x: str(int(x)), result[:8])), "".join(map(lambda x: str(int(x)), result[offset:offset+8]))
+    return "".join([str(int(x)) for x in result[:8]])
 
 
 if __name__ == '__main__':
