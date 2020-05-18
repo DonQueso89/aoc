@@ -55,7 +55,7 @@ function isValid(floor: Floor): boolean {
       if (!floor.state.includes(e)) {
         continue
       }
-      if (floor.state.find(x => x == e.slice(0, 2) + 'G')) {
+      if (floor.state.includes((e.slice(0, 2) + 'G') as Hardware)) {
         continue 
       }
       else if (floor.state.find(x => x.endsWith('G'))) {
