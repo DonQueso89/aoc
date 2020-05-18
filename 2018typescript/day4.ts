@@ -3,7 +3,7 @@ import { readFileSync } from 'fs'
 interface Guard {
   id_: string
   minutes: Object
-  maxMinute: () => number
+  maxMinute: () => [number, number]
   sleepTime: () => number
   incr: (number) => void
 }
@@ -22,7 +22,7 @@ Guard.prototype.maxMinute = function() {
       idx = i
     }
   })
-  return idx
+  return [idx, max]
 }
 Guard.prototype.sleepTime = function() {
   return this.minutes.reduce((a, e) => a + e, 0)
@@ -60,6 +60,9 @@ for (let line of data) {
 
 let sortedBySleep: Array<Guard> = Object.values(guards)
 sortedBySleep.sort((a: Guard, b: Guard) => (a.sleepTime() < b.sleepTime()) ? 1 : -1)
-//console.log(guards)
 
-console.log(sortedBySleep[0].maxMinute() * Number(sortedBySleep[0].id_))
+console.log(sortedBySleep[0].maxMinute()[0] * Number(sortedBySleep[0].id_))
+
+
+sortedBySleep.sort((a: Guard, b: Guard) => (a.maxMinute()[1] < b.maxMinute()[1]) ? 1 : -1)
+console.log(sortedBySleep[0].maxMinute()[0] * Number(sortedBySleep[0].id_))
