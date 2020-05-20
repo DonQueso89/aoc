@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs'
+import path from 'path'
 
 interface Guard {
   id_: string
@@ -33,7 +34,7 @@ Guard.prototype.incr = function(minute: number) {
 }
 
 
-let data: Array<string> = readFileSync('/home/kees/aoc/2018typescript/input4', 'utf-8').split("\n")
+let data: Array<string> = readFileSync(path.join(process.cwd(), process.argv.pop()), 'utf-8').split("\n")
 data.sort(
   (a, b) => (new Date(a.slice(1, 17)) < new Date(b.slice(1, 17))) ? -1 : 1
 )
