@@ -1,6 +1,3 @@
-import Base.parse  #  explicit imports for method extension
-
-
 if length(ARGS) > 0
     infile = ARGS[1]
 else
