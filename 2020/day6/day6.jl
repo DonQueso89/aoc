@@ -6,6 +6,8 @@ end
 
 input = readlines(infile)
 
+bintrunc(c::Char)::Int32 = 1 << Int32(c - 97)
+
 function solve(inp)
     b_any = 0
     b_all =  (1 << 32) - 1
@@ -20,7 +22,7 @@ function solve(inp)
         else
             p = 0
             for c in line
-                p |= 1 << Int32(c - 97)
+                p |= bintrunc(c)
             end
             b_any |= p
             b_all &= p
@@ -28,7 +30,6 @@ function solve(inp)
     end
     return t_any + count("1", bitstring(b_any)), t_all + count("1", bitstring(b_all))
 end
-
 a, b = solve(input)
 println("1: $a")
 println("2: $b")
