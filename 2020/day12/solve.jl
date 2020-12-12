@@ -6,72 +6,41 @@ end
 
 iset = readlines(open(fname))
 
-EAST = 0
-SOUTH = 90
-WEST = 180
-NORTH = 270
+EAST, SOUTH, WEST, NORTH = 0, 90, 180, 270
 
-N(x, y, n, d) = (x, y + n, d)
-S(x, y, n, d) = (x, y - n, d)
-E(x, y, n, d) = (x + n, y, d)
-W(x, y, n, d) = (x - n, y, d)
-R(x, y, n, d) = (x, y, (d + n) % 360)
-L(x, y, n, d) = (x, y, (d - n) < 0 ? 360 + (d - n) : d - n)
-F(x, y, n, d) = d === EAST ? E(x, y, n, d) : d === WEST ? W(x, y, n, d) : d === SOUTH ? S(x, y, n, d) : N(x, y, n, d)
-
-function F(x, y, n, waypoint:: Tuple{Int64, Int64})
-    wx, wy = waypoint
-    dx, dy = wx - x, wy - y
-    x, y = x + n * dx, y + n * dy
-    return (x, y, (x + dx, y + dy))
-end
-
-function R(x, y, n, waypoint::Tuple{Int64, Int64})
-    wx, wy = waypoint
-    dx, dy = wx - x, wy - y
-
-    for _ in 1:Int(n/90)
-        dx, dy = dy, dx * -1
-    end
-    
-    return (x, y, (x + dx, y + dy))
-end
-function L(x, y, n, waypoint::Tuple{Int64, Int64})
-    wx, wy = waypoint
-    dx, dy = wx-x, wy-y
-    for _ in 1:Int(n/90)
-        dx, dy = dy * -1, dx
-    end
-    
-    return (x, y, (x + dx, y + dy))
-end
+move(dvector::Array{Int64}) = (pos::Array{Int64}, n::Int16, d::Int16=Int16(0)) -> (pos + dvector * n, d)
+N, S, E, W = move([0, 1]), move(-[0, 1]), move([1, 0]), move(-[1, 0])
+R(pos::Array{Int64}, n::Int16, d::Int16) = (pos, (d + n) % 360)
+L(pos, n::Int16, d::Int16) = (pos, (d - n) < 0 ? 360 + (d - n) : d - n)
+F(pos, n::Int16, d::Int16) = Dict(EAST=>E, WEST=>W, SOUTH=>S, NORTH=>N)[d](pos, n, d)
+R(waypoint::Array{Int64}, n::Union{Int16, Int64})  = (r = circshift(waypoint, 1) .* [1, -1]; n == 90 ? [r, 0] : R(r, n - 90))
+L(waypoint::Array{Int64}, n::Union{Int16, Int64})  = (r = circshift(waypoint, 1) .* [-1, 1]; n == 90 ? [r, 0] : L(r, n - 90))
 
 function nav(iset)
-    dir = EAST
-    x, y = 0, 0
+    dir::Int16 = EAST
+    pos = [0, 0]
 
     for i in iset
-        ins, n = i[1], parse(Int16, i[2:length(i)]) 
-        x, y, dir = eval(Symbol(ins))(x, y, n, dir)
+        ins, n = i[1], parse(Int16, i[2:end]) 
+        pos, dir = eval(Symbol(ins))(pos, n, dir)
     end
 
-    return abs(x) + abs(y)
+    return sum(abs.(pos))
 end
 
 function nav_by_waypoint(iset)
-    wx, wy = 10, 1
-    x, y = 0, 0
+    waypoint = [10, 1]
+    pos = [0, 0]
 
     for i in iset
-        ins, n = i[1], parse(Int16, i[2:length(i)]) 
-        if occursin(ins, "NESW")
-            wx, wy, _ = eval(Symbol(ins))(wx, wy, n, 0)
+        ins, n = i[1], parse(Int16, i[2:end]) 
+        if occursin(ins, "NESWRL")
+            waypoint, _ = eval(Symbol(ins))(waypoint, n)
         else
-            x, y, waypoint = eval(Symbol(ins))(x, y, n, (wx, wy))
-            wx, wy = waypoint
+            pos += waypoint * n
         end
     end
-    return abs(x) + abs(y)
+    return sum(abs.(pos))
 end
 
 println("1: $(nav(iset))")
