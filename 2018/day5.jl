@@ -5,28 +5,14 @@ if length(ARGS) > 0
 else
     fname = "input5"
 end
-
+alph = "abcdefghijklmnopqrtsuvwxyz"
 polymer = readline(open(fname))
 
-function react(p::Array{Char})
-    l = length(p)
-    # handle non overlapping in one go
-    for i = 2:l-1
-        if abs(p[i] - p[i-1]) == 32
-            return react(p[[1:i-2...,min(i+1, l):l...]])
-        end
-        if abs(p[i] - p[i+1]) == 32
-            return react(p[[1:i-1...,min(i+2, l):l...]])
-        end
-    end
+rgx = Regex(join(["$(uppercase(x))$x|$x$(uppercase(x))" for x in alph], "|"))
+react(p) = (np = replace(p, rgx=>""); length(np) < length(p) ? react(np) : p;)
 
-    return length(p)
-end
-#println("1 $(react(collect(polymer)))")
+println("1: $(length(react(polymer)))")
 
-result = Threads.Atomic{Int64}(1 << 62)
-
-Threads.@threads for c = 65:90 Threads.atomic_min!(result, react(collect(replace(polymer, Regex("[$(Char(c))$(Char(c+32))]")=>"")))) end
-
-
-println("2 $(result[])")
+_min = Threads.Atomic{Int64}(1 << 62)
+Threads.@threads for x in alph Threads.atomic_min!(_min, (length ∘ react)(replace(polymer, Regex("[$(uppercase(x)*x)]")=>"")))  end
+println("2: $(_min[])")
