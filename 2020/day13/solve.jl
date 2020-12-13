@@ -52,11 +52,11 @@ function nextcontiguous(buses::Array{SubString{String}, 1})
     l = length(buses)
     div_test_vector = [parse(Int, replace(x, r"x"=>"1")) for x in buses]
     product_per_idx = [i=>reduce(*, [[y for (j, y) in enumerate(div_test_vector) if y > 1 && abs(i-j)==y]..., div_test_vector[i]]) for i in 1:l]
-    probe = sort(product_per_idx, by=x -> x.second)[end]
-    attempt = 0
+    probe0 = sort(product_per_idx, by=x -> x.second)[end]
+    probe = 0
     while true
-        probe_multiple += probe.second
-        probe_vector = collect((probe_multiple - probe.first + 1):(probe_multiple + (l-probe.first)))
+        probe += probe0.second
+        probe_vector = collect((probe - probe0.first + 1):(probe + (l-probe0.first)))
         if any(x > 0 for x in probe_vector .% div_test_vector)
             continue
         end
