@@ -7,16 +7,18 @@ end
 iset = readlines(open(fname))
 
 
-function nextbus(iset)
-    target, ids = parse(Int32, iset[1]), map(x -> parse(Int16, x), split(replace(iset[2], r"x,"=>""), ","))
+function nextbus(target, ids)
     return reduce(*, sort(collect(zip(ids, map(x -> ((target÷x) + 1) * x - target, ids))), by=x -> x[2])[1])
 end
 
-println("1: $(nextbus(iset))")
+target, ids = parse(Int32, iset[1]), map(x -> parse(Int16, x), split(replace(iset[2], r"x,"=>""), ","))
+println("1: $(nextbus(target, ids))")
 
 
 function nextcontiguous()
     """
+    Specific fast solution for my input
+
     (1, 19)
     (10, 41)
     (20, 859)
@@ -38,11 +40,29 @@ function nextcontiguous()
         e = p1 * k
         if (e + 31) % p2 == 0
             # => 905694340256752
-            println("2: $(e-19)")
-            break
+            return e-19
         end
         k += 1
     end
 end
 
-nextcontiguous()
+function nextcontiguous(buses::Array{SubString{String}, 1})
+    """Generalized solution which is slower because it runs a divisibility test
+    on the whole probe vector"""
+    l = length(buses)
+    div_test_vector = [parse(Int, replace(x, r"x"=>"1")) for x in buses]
+    product_per_idx = [i=>reduce(*, [[y for (j, y) in enumerate(div_test_vector) if y > 1 && abs(i-j)==y]..., div_test_vector[i]]) for i in 1:l]
+    probe = sort(product_per_idx, by=x -> x.second)[end]
+    attempt = 0
+    while true
+        attempt += probe.second
+        sequence = collect((attempt - probe.first + 1):(attempt + (l-probe.first)))
+        if any(x > 0 for x in sequence .% div_test_vector)
+            continue
+        end
+        return attempt - probe.first + 1
+    end    
+end
+
+println("2 fast and specific: $(nextcontiguous())")
+println("2 slow and generic: $(nextcontiguous(split(iset[2], ",")))")
