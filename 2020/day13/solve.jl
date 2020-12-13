@@ -55,12 +55,12 @@ function nextcontiguous(buses::Array{SubString{String}, 1})
     probe = sort(product_per_idx, by=x -> x.second)[end]
     attempt = 0
     while true
-        attempt += probe.second
-        sequence = collect((attempt - probe.first + 1):(attempt + (l-probe.first)))
-        if any(x > 0 for x in sequence .% div_test_vector)
+        probe_multiple += probe.second
+        probe_vector = collect((probe_multiple - probe.first + 1):(probe_multiple + (l-probe.first)))
+        if any(x > 0 for x in probe_vector .% div_test_vector)
             continue
         end
-        return attempt - probe.first + 1
+        return first(probe_vector)
     end    
 end
 
