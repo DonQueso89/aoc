@@ -62,5 +62,5 @@ while length(position_per_field) < n_positions
         end
     end
 end
-
+# FUCKIT
 println("2: $(reduce(*, [tickets[1][position_per_field[x]] for x in [1,2,3,4,5]])* tickets[1][13]  )")
