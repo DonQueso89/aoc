@@ -29,9 +29,9 @@ function f()
     invalid_indices = []
     for i = 2:length(tickets)
         t = tickets[i]
-        _invalid = sum([x for x in t if !valid(x)])
-        if _invalid > 0
-            invalid += _invalid
+        _invalid = [x for x in t if !valid(x)]
+        if length(_invalid) > 0
+            invalid += sum(_invalid)
             push!(invalid_indices, i)
         end
     end
@@ -62,5 +62,4 @@ while length(position_per_field) < n_positions
         end
     end
 end
-# FUCKIT
-println("2: $(reduce(*, [tickets[1][position_per_field[x]] for x in [1,2,3,4,5]])* tickets[1][13]  )")
+println("2: $(reduce(*, [tickets[1][position_per_field[x]] for x = 1:6]))")
