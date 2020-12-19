@@ -74,4 +74,5 @@ function evaluate2(expr)
     return iresult
 end
 
-println("1: $(sum(map(evaluate2, exprs)))")
+println("1: $(sum(map(evaluate, exprs)))")
+println("2: $(sum(map(evaluate2, exprs)))")
