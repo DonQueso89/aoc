@@ -33,4 +33,45 @@ function evaluate(expr)
     return iresult
 end
 
-println("1: $(sum(map(evaluate, exprs)))")
+function evaluate2(expr)
+    termstack = []
+    iresult = 1
+    op = *
+    for c in expr
+        if c == '('
+            push!(termstack, Term(iresult, op))
+            push!(termstack, Term(0, +))
+            iresult, op = 1, *
+        elseif c == '*'
+            push!(termstack, Term(iresult, *))
+            iresult, op = 1, *
+        elseif isdigit(c)
+            iresult = op(iresult, parse(Int, c))
+        elseif c == ' '
+            continue
+        elseif c == '+'
+            op = +
+        elseif c == ')'
+            while termstack[end].n > 0
+                lhs = pop!(termstack)
+                iresult = lhs.op(iresult, lhs.n)
+            end
+            lhs = pop!(termstack)
+            iresult = lhs.op(iresult, lhs.n)
+
+            if length(termstack) > 0 && termstack[end].op == +
+                lhs = pop!(termstack)
+                iresult = lhs.op(iresult, lhs.n)
+            end
+        end
+    end
+
+    while length(termstack) > 0
+        lhs = pop!(termstack)
+        iresult = lhs.op(iresult, lhs.n)
+    end
+
+    return iresult
+end
+
+println("1: $(sum(map(evaluate2, exprs)))")
