@@ -42,7 +42,7 @@ function bootstrap(last_oriented_tile, tiles)
     # orient 1 pair, then find the rest
     left_adj, right_adj, top_adj, bottom_adj = nothing, nothing, nothing, nothing
     for tile in tiles
-        if tile.oriented
+        if tile.id == last_oriented_tile.id
             continue
         end
 
@@ -53,25 +53,25 @@ function bootstrap(last_oriented_tile, tiles)
                 tile.g = rotfn(tile.g)
                 tright, tleft, ttop, tbottom = borders(tile)
 
-                if all(tright .== left)
+                if length(last_oriented_tile.left) == 0 && all(tright .== left)
                     push!(tile.right, last_oriented_tile)
                     push!(last_oriented_tile.left, tile)
                     tile.oriented = true
                     left_adj = tile
                     break
-                elseif all(tleft .== right)
+                elseif length(last_oriented_tile.right) == 0 && all(tleft .== right)
                     push!(tile.left, last_oriented_tile)
                     push!(last_oriented_tile.right, tile)
                     tile.oriented = true
                     right_adj = tile
                     break
-                elseif all(ttop .== bottom)
+                elseif length(last_oriented_tile.bottom) == 0 && all(ttop .== bottom)
                     push!(tile.top, last_oriented_tile)
                     push!(last_oriented_tile.bottom, tile)
                     tile.oriented = true
                     bottom_adj = tile
                     break
-                elseif all(tbottom .== top)
+                elseif length(last_oriented_tile.top) == 0 && all(tbottom .== top)
                     push!(tile.bottom, last_oriented_tile)
                     push!(last_oriented_tile.top, tile)
                     tile.oriented = true
