@@ -21,21 +21,26 @@ end
 idx = findfirst(isone, cups)
 println("1: $(join(circshift(cups, -idx)[1:end-1]))")
 
-cups = [parse(Int, x) for x in inp]
-dll = Dict()
-
-dll[cups[1]] = (last=10^6, next=cups[2])
-dll[10^6] = (last=10^6-1, next=cups[1])
-
-for (i, e) in enumerate(cups[2:end-1])
-    dll[e] = (last=cups[i], next=cups[i+2])
+mutable struct E
+    last::Int
+    next::Int
 end
 
-dll[cups[end]] = (last=cups[end-1], next=10)
-dll[10] = (last=cups[end], next=11)
+
+cups = [parse(Int, x) for x in inp]
+dll = Dict()
+dll[cups[1]] = E(10^6, cups[2])
+dll[10^6] = E(10^6-1, cups[1])
+
+for (i, e) in enumerate(cups[2:end-1])
+    dll[e] = E(cups[i], cups[i+2])
+end
+
+dll[cups[end]] = E(cups[end-1], 10)
+dll[10] = E(cups[end], 11)
 
 for i = 11:10^6-1
-    dll[i] = (last=i-1, next=i+1)
+    dll[i] = E(i-1, i+1)
 end
 
 c = 3
@@ -53,25 +58,20 @@ for i=1:10^7
     e3 = dll[m3]
 
     # remove
-    before_seq = dll[e1.last]
-    after_seq = dll[e3.next]
+    dll[e1.last].next = e3.next
+    dll[e3.next].last = c
 
-    dll[e1.last] = (last=before_seq.last, next=e3.next)
-    dll[e3.next] = (last=c, next=after_seq.next)
-
-    dll[c] = (last=e.last, next=e3.next)
+    dll[c].next = e3.next
 
     # insert
-    before_seq = dll[target]
-    after_seq = dll[before_seq.next]
+    mem = dll[target].next
+    dll[target].next = m1
+    dll[mem].last = m3
 
-    dll[target] = (last=before_seq.last, next=m1)
-    dll[before_seq.next] = (last=m3, next=after_seq.next)
+    dll[m1].last = target
+    dll[m3].next = mem
 
-    dll[m1] = (last=target, next=m2)
-    dll[m3] = (last=m2, next=before_seq.next)
-
-    global c = e3.next
+    global c = dll[c].next
 end
 
 t1 = dll[1].next

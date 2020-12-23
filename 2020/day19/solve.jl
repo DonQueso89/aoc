@@ -46,19 +46,14 @@ patterns = lookup(Int16(0))
 valid = intersect(patterns, messages)
 println("1: $(length(valid))")
 
-rest = setdiff(messages, patterns)
-"""
-8: 42 | 42 8
-11: 42 31 | 42 11 31
-"""
 rgx1 = Regex(join(map(x -> "^"*x, memo[42]), "|"))
 rgx2 = Regex(join(map(x -> "^"*x, memo[31]), "|"))
 
 patts = Dict(42=>rgx1, 31=>rgx2)
 
-function match_layered(s::AbstractString)
+function lexer(s::AbstractString)
     trimmed = s
-    path = []
+    path::Array{Int} = []
     while length(trimmed) > 0
         if !(match(patts[42], trimmed) === nothing)
             trimmed = replace(trimmed, patts[42]=>"")
@@ -70,10 +65,38 @@ function match_layered(s::AbstractString)
             break
         end
     end
+    return path
+end
 
-    if length(trimmed) == 0
-        l = length(path)
-        println(path)
+function grammar_valid(tokens::Array{Int})
+    """
+    8: 42 | 42 8
+    11: 42 31 | 42 11 31
+    """
+    if length(tokens) < 3
+        return false
+    end
+
+    if first(tokens) == 31 || tokens[2] == 31
+        return false
+    end
+
+    if all(tokens .== 42) || all(tokens .== 31)
+        return false
+    end
+
+    if tokens[end] == 42
+        return false
+    end
+
+    n_42_required = 0
+    while tokens[end] == 31
+        n_42_required += 1
+        pop!(tokens)
+    end
+
+    if length(tokens) >= n_42_required + 1 && all(tokens .== 42)
+        return true
     end
 
     return false
@@ -81,9 +104,10 @@ end
 
 n_valid = 0
 for msg in messages
-    if match_layered(msg)
+    tokens = lexer(msg)
+    if grammar_valid(tokens)
         global n_valid += 1
     end
 end
 
-println("2: $(n_valid + length(valid))")
+println("2: $n_valid")
