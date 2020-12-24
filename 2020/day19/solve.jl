@@ -109,5 +109,6 @@ for msg in messages
         global n_valid += 1
     end
 end
-
+println(patts[42])
+println(patts[31])
 println("2: $n_valid")
