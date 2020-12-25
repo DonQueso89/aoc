@@ -85,13 +85,4 @@ end
 
 
 tiles = map(tile, inp)
-
-tiles[1].oriented = true
-for tile in tiles
-    bootstrap(tile, tiles)
-end
-
-
-for tile in tiles
-    section(tile)
-end
+println(length(tiles))
