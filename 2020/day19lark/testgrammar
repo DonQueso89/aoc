@@ -1,0 +1,12 @@
+zero : four one five
+one : two three 
+    | three two
+two : four four 
+    | five five
+three : four five 
+      | five four
+four : "a"
+five : "b"
+
+%import common.WS
+%ignore WS

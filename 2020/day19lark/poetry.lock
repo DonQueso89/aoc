@@ -1,0 +1,21 @@
+[[package]]
+category = "main"
+description = "a modern parsing library"
+name = "lark"
+optional = false
+python-versions = "*"
+version = "0.11.1"
+
+[package.extras]
+nearley = ["js2py"]
+regex = ["regex"]
+
+[metadata]
+content-hash = "ba08a9248b121fca45f558ad878c328aa71aefa0ab6a04a542465e32c32b6369"
+python-versions = "^3.8.2"
+
+[metadata.files]
+lark = [
+    {file = "lark-0.11.1-py2.py3-none-any.whl", hash = "sha256:d755f63b8d361110dce780ca6806833b14ddb0b831f3dbcce2ddec187374ff37"},
+    {file = "lark-0.11.1.tar.gz", hash = "sha256:f2c6ed79ae128a89714bbaa4a6ecb61b6eec84d1b5d63b9195ad461762f96298"},
+]
