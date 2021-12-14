@@ -17,10 +17,8 @@ function solve(polymer, t)
     it_ = 0
     while it_ < N
         nxt = Dict{String, Int}()
-        println(it_)
         keys_ = keys(pairs_)
         for k in keys_
-            println(k)
             a, b = String([k[1], t[k][1]]), String([t[k][1], k[2]])
             nxt[a] = get(nxt, a, 0) + pairs_[k]
             nxt[b] = get(nxt, b, 0) + pairs_[k]
@@ -47,29 +45,3 @@ function solve(polymer, t)
 end
 
 println(solve(polymer, t))
-
-"""
-
-CH -> B
-HH -> N
-CB -> H
-NH -> C
-HB -> C
-HC -> B
-HN -> C
-NN -> C
-BH -> H
-NC -> B
-NB -> B
-BN -> B
-BB -> N
-BC -> B
-CC -> N
-CN -> C
-
-NNCB (NN NC CB) -> NC CN NB BC CH HB
-NCNBCHB -> NB BC CC CN NB BB BB BC CB BH HC CB
-NBCCNBBBCBHCB -> NB BB BB BC CN NC  
-NBBBCNCCNBBNBNBBCHBHHBCHB  NB BB 
-
-"""
