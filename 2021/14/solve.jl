@@ -4,9 +4,8 @@ inp = open(infl)
 polymer = readline(inp)
 
 t = Dict(map(eval ∘ Meta.parse, split(replace(replace(read(inp, String), "->" => "=>"), r"([A-Z]+)" => s"\"\1\""), "\n")))
-N = 40
 
-function solve(polymer, t)
+function solve(polymer, t, N)
     pairs_ = Dict{String, Int}()
     first_, last_ = polymer[1], polymer[end]
 
@@ -26,7 +25,7 @@ function solve(polymer, t)
         pairs_ = nxt
         it_ += 1
     end
-    cnt:: Dict{Char, Float64} = Dict()
+    cnt:: Dict{Char, Int} = Dict()
     for k in keys(pairs_)
         for c in k
             cnt[c] = get(cnt, c, 0) + pairs_[k]
@@ -34,14 +33,14 @@ function solve(polymer, t)
     end
 
     for k in keys(cnt)
+        cnt[k] += (k ∈ [first_, last_])
         cnt[k] /= 2
     end
-    cnt[first_] += .5
-    cnt[last_] += .5
 
 
     maximum(values(cnt)) - minimum(values(cnt))
 
 end
 
-println(solve(polymer, t))
+println(solve(polymer, t, 10))
+println(solve(polymer, t, 40))
