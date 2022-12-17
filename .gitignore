@@ -4,4 +4,4 @@ package-lock.json
 __pycache__
 **/input*
 **/test*.txt
-**/inp.txt
+**/in*.txt
