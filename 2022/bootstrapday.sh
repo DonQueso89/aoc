@@ -35,6 +35,6 @@ chmod +x $dirn/$filen
 # expects stdin to be written to
 # otherwise blocks
 while read inpline; do
-	echo $inpline >> $dirn/inp.txt
+	echo "$inpline" >> $dirn/inp.txt
 done
 echo $inpline >> $dirn/inp.txt
