@@ -1,6 +1,7 @@
 package main
 
 import (
+	u "aoc/utils"
 	"bytes"
 	"fmt"
 	"log"
@@ -8,12 +9,6 @@ import (
 	"sort"
 	"strconv"
 )
-
-func must(err error) {
-	if err != nil {
-		log.Fatal("An error occurred", err)
-	}
-}
 
 type Remainders = map[int]int
 type operation = func(int) int
@@ -37,7 +32,7 @@ func addFac(c int) operation {
 func monkeyFactory(mod int, pass int, fail int, op operation) monkey[int] {
 	return func(worry int) (int, int) {
 		worry = op(worry) / 3
-		if worry % mod == 0 {
+		if worry%mod == 0 {
 			return worry, pass
 		}
 		return worry, fail
@@ -61,7 +56,7 @@ func monkeyFactoryR(mod int, pass int, fail int, op operation) monkey[*Remainder
 
 func atoi[T string | []byte](b T) int {
 	i, err := strconv.ParseInt(string(b), 10, 8)
-	must(err)
+	u.Must(err)
 	return int(i)
 }
 
@@ -76,7 +71,7 @@ func Map[T, R []byte | string | int](a []T, function func(T) R) []R {
 func main() {
 	log.SetFlags(0)
 	content, err := os.ReadFile("inp.txt")
-	must(err)
+	u.Must(err)
 	lines := bytes.Split(content, []byte("\n"))
 	var monkeys [8]monkey[int]
 	var monkeysR [8]monkey[*Remainders]

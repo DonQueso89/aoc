@@ -1,4 +1,4 @@
-module aoc/11
+module aoc/12
 
 go 1.18
 

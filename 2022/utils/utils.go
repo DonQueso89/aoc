@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"strings"
+	"log"
 )
 
 type Numerical interface {
@@ -242,6 +243,13 @@ func (n *Number) String() string {
 		return "0"
 	}
 	return s.String()
+}
+
+
+func Must(err error) {
+	if err != nil {
+		log.Fatal("An error occurred", err)
+	}
 }
 
 func example() {
