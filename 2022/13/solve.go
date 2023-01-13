@@ -69,9 +69,9 @@ func evaluate(p Pair) int {
 }
 
 func main() {
-	data, err := os.ReadFile("inp.txt")
-	u.Must(err)
-	lines := strings.Split(string(data), "\n")
+	data, err := os.readfile("inp.txt")
+	u.must(err)
+	lines := strings.split(string(data), "\n")
 
 	var stack []Packet
 	var cur Packet
@@ -94,36 +94,36 @@ func main() {
 		stack = make([]Packet, 0)
 		for idx, s := range line {
 			switch s {
-				case BOPEN:
-					if cur != nil {
-						stack = append(stack, cur)
-					}
-					cur = make(Packet, 0)
-				case BCLOSE:
-					if len(stack) > 0 {
-						parent := stack[len(stack) - 1]
-						parent = append(parent, cur)
-						cur = parent
-						stack = stack[:len(stack) - 1]
-					}
-				case ONE:
-					if line[idx + 1] == ZERO {
-						cur = append(cur, int(10))
-						continue
-					}
-					cur = append(cur, 1)
-				case ZERO:
-					if line[idx - 1] == ONE {
-						continue
-					}
-					cur = append(cur, int(0))
-				case COMMA:
-					continue
-				default:
-					n, err  := sc.ParseInt(string(s), 10, 8)
-					u.Must(err)
-					cur = append(cur, int(n))
+			case BOPEN:
+				if cur != nil {
+					stack = append(stack, cur)
 				}
+				cur = make(Packet, 0)
+			case BCLOSE:
+				if len(stack) > 0 {
+					parent := stack[len(stack)-1]
+					parent = append(parent, cur)
+					cur = parent
+					stack = stack[:len(stack)-1]
+				}
+			case ONE:
+				if line[idx+1] == ZERO {
+					cur = append(cur, int(10))
+					continue
+				}
+				cur = append(cur, 1)
+			case ZERO:
+				if line[idx-1] == ONE {
+					continue
+				}
+				cur = append(cur, int(0))
+			case COMMA:
+				continue
+			default:
+				n, err := sc.ParseInt(string(s), 10, 8)
+				u.Must(err)
+				cur = append(cur, int(n))
+			}
 		}
 		pair[idx] = cur
 		idx++
@@ -133,13 +133,13 @@ func main() {
 	s := 0
 	for i, p := range pairs {
 		if evaluate(p) == ORDERED {
-			s+=i
+			s += i
 			s++
 		}
 	}
 
 	fmt.Printf("1: %d\n", s)
-	
+
 	sort.Slice(packets, func(i, j int) bool {
 		return evaluate(Pair{packets[i], packets[j]}) == ORDERED
 	})

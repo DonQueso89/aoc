@@ -252,6 +252,14 @@ func Must(err error) {
 	}
 }
 
+func Map[T, R int | string | byte](slice []T, fn func(T) R) []R {
+	out := make([]R, len(slice))
+	for i, e := range slice {
+		out[i] = fn(e)
+	}
+	return out
+}
+
 func example() {
 	var in Numerical = Num(123)
 	var io Numerical = Num(987)
