@@ -6,6 +6,12 @@ import (
 	"log"
 )
 
+type Any interface{}
+type YX struct {
+	Y int
+	X int
+}
+
 type Numerical interface {
 	AddZero()
 	Add(*Number) *Number
@@ -259,6 +265,30 @@ func Map[T, R int | string | byte](slice []T, fn func(T) R) []R {
 	}
 	return out
 }
+
+
+func Max(n ...int) int {
+	r := n[0]
+	for i := 1; i < len(n); i++ {
+		e := n[i]
+		if e > r {
+			r = e
+		}
+	}
+	return r
+}
+func Min(n ...int) int {
+	r := n[0]
+	for i := 1; i < len(n); i++ {
+		e := n[i]
+		if e < r {
+			r = e
+		}
+	}
+	return r
+}
+
+
 
 func example() {
 	var in Numerical = Num(123)

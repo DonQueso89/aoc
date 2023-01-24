@@ -33,27 +33,6 @@ func (s *Sensor) String() string {
 	return fmt.Sprintf("<S: (y=%d, x=%d) B: (y=%d, x=%d)>", s.pos.y, s.pos.x, s.beacon.y, s.beacon.x)
 }
 
-func max(n ...int) int {
-	r := n[0]
-	for i := 1; i < len(n); i++ {
-		e := n[i]
-		if e > r {
-			r = e
-		}
-	}
-	return r
-}
-func min(n ...int) int {
-	r := n[0]
-	for i := 1; i < len(n); i++ {
-		e := n[i]
-		if e < r {
-			r = e
-		}
-	}
-	return r
-}
-
 func numExcluded(Y int, beacons map[YX]bool, sensors []*Sensor, lowerBound int, upperBound int, excludeBeacons bool) (int, YX) {
 	ranges := make([][2]int, 0)
 	var minX, maxX int
@@ -74,10 +53,10 @@ func numExcluded(Y int, beacons map[YX]bool, sensors []*Sensor, lowerBound int, 
 		ub := (sensor.pos.x + offset)
 
 		if lowerBound != -1 {
-			lb = max(lowerBound, lb)
+			lb = u.Max(lowerBound, lb)
 		}
 		if upperBound != -1 {
-			ub = min(upperBound, ub)
+			ub = u.Min(upperBound, ub)
 		}
 
 		for beacon, _ := range(beacons) {
@@ -106,7 +85,7 @@ func numExcluded(Y int, beacons map[YX]bool, sensors []*Sensor, lowerBound int, 
 	for i := 1; i < len(ranges); i++ {
 		upperBounds = append(upperBounds, ranges[i-1][1])
 		r := ranges[i][0]
-		gap := r - max(upperBounds...)
+		gap := r - u.Max(upperBounds...)
 		if gap > 1 {
 			gaps += (gap - 1)
 			target = YX{Y, r - 1}
