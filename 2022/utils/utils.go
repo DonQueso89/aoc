@@ -4,7 +4,11 @@ import (
 	"fmt"
 	"strings"
 	"log"
+	"flag"
 )
+
+const TESTFILE = "test.txt"
+const INPUTFILE = "inp.txt"
 
 type Any interface{}
 type YX struct {
@@ -258,7 +262,7 @@ func Must(err error) {
 	}
 }
 
-func Map[T, R int | string | byte](slice []T, fn func(T) R) []R {
+func Map[T, R Any](slice []T, fn func(T) R) []R {
 	out := make([]R, len(slice))
 	for i, e := range slice {
 		out[i] = fn(e)
@@ -288,21 +292,24 @@ func Min(n ...int) int {
 	return r
 }
 
+func Cycle[T Any](arr []T) func() T {
+	m := len(arr)
+	i := 0
+	next := func() T {
+		e := arr[i]
+		i++
+		i%=m
+		return e
+	 }
+	 return next
+}
 
+func GetInputFile() string {
+	testFlag := flag.Bool("test", false, "Use test input")
+	flag.Parse()
+	if *testFlag {
+		return TESTFILE
+	}
 
-func example() {
-	var in Numerical = Num(123)
-	var io Numerical = Num(987)
-	n := in.(*Number)
-	o := io.(*Number)
-	fmt.Println(n.Mult(o))
-	fmt.Println(n.Add(o))
-
-	fmt.Printf("%d %d %d %d \n", n.Int(), o.Int(), Num(0).Int(), Num(1).Int())
-
-	fmt.Println(n.Div(Num(1)))
-	fmt.Println(n.Div(o))
-	fmt.Println(o.Div(n))
-
-	fmt.Println(Num(872364).Div(Num(9763)))
+	return INPUTFILE
 }
