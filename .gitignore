@@ -5,3 +5,4 @@ __pycache__
 **/input*
 **/test*.txt
 **/in*.txt
+.vscode

@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"fmt"
-	"strings"
-	"log"
 	"flag"
+	"fmt"
+	"log"
+	"os"
+	"strings"
 )
 
 const TESTFILE = "test.txt"
@@ -121,7 +122,7 @@ func (n *Number) Mult(o *Number) *Number {
 func (a *Number) Gte(b *Number) bool {
 	// true if a >= b
 	al, bl := a.Len(), b.Len()
-	fmt.Printf("%v (len: %d) >= %d (len: %d) = %v ",a.coef, a.Len(), b.Int(), b.Len(), a.Int() >= b.Int())
+	fmt.Printf("%v (len: %d) >= %d (len: %d) = %v ", a.coef, a.Len(), b.Int(), b.Len(), a.Int() >= b.Int())
 	if al > bl {
 		fmt.Printf("true 1\n")
 		return true
@@ -216,13 +217,12 @@ func (n Number) Div(d *Number) (*Number, *Number) {
 		//fmt.Printf("quotient %v (len: %d) remainder %v (len: %d) remainder > d = %v len d: %d d: %v\n", quotient, quotient.Len(), remainder, remainder.Len(), remainder.Gte(d), d.Len(), d)
 	}
 
-
 	return quotient.Trim(), remainder.Trim()
 }
 
 func (n *Number) Trim() *Number {
 	var i int
-	for i = n.Len() ;i > 0; i-- {
+	for i = n.Len(); i > 0; i-- {
 		if n.coef[i-1] > 0 {
 			break
 		}
@@ -255,7 +255,6 @@ func (n *Number) String() string {
 	return s.String()
 }
 
-
 func Must(err error) {
 	if err != nil {
 		log.Fatal("An error occurred", err)
@@ -269,7 +268,6 @@ func Map[T, R Any](slice []T, fn func(T) R) []R {
 	}
 	return out
 }
-
 
 func Max(n ...int) int {
 	r := n[0]
@@ -298,10 +296,10 @@ func Cycle[T Any](arr []T) func() T {
 	next := func() T {
 		e := arr[i]
 		i++
-		i%=m
+		i %= m
 		return e
-	 }
-	 return next
+	}
+	return next
 }
 
 func GetInputFile() string {
@@ -312,4 +310,18 @@ func GetInputFile() string {
 	}
 
 	return INPUTFILE
+}
+
+func ReadLines(fname string) []string {
+	data, ok := os.ReadFile(fname)
+	Must(ok)
+	return strings.Split(string(data), "\n")
+}
+
+func CopyMap[K, V string | int | bool](m map[K]V) map[K]V {
+	cp := make(map[K]V)
+	for k, v := range m {
+		cp[k] = v
+	}
+	return cp
 }
