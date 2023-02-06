@@ -33,6 +33,56 @@ type Number struct {
 	coef []int
 }
 
+type Fraction struct {
+	N int64
+	D int64
+}
+
+func (a *Fraction) Multiply(b *Fraction) *Fraction {
+	return (&Fraction{a.N * b.N, a.D * b.D}).Simplify()
+}
+
+func (a *Fraction) Divide(b *Fraction) *Fraction {
+	return (&Fraction{a.N * b.D, a.D * b.N}).Simplify()
+}
+
+func (a *Fraction) Add(b *Fraction) *Fraction {
+	return (&Fraction{a.N*b.D + a.D*b.N, a.D * b.D}).Simplify()
+}
+
+func (a *Fraction) Subtract(b *Fraction) *Fraction {
+	return (&Fraction{a.N*b.D - a.D*b.N, a.D * b.D}).Simplify()
+}
+
+func (a *Fraction) Int() int64 {
+	return a.N / a.D
+}
+
+func (f *Fraction) Reciprocal() *Fraction {
+	return &Fraction{f.D, f.N}
+}
+
+func (f *Fraction) String() string {
+	return fmt.Sprintf("%d/%d", f.N, f.D)
+}
+
+func (f *Fraction) Simplify() *Fraction {
+	gcd := Gcd(f.N, f.D)
+	f.N /= gcd
+	f.D /= gcd
+	return f
+}
+
+func Gcd(a, b int64) int64 {
+	// euclidean algorithm (from G.E. Andrews)
+	for b > 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+
 func Num(i int) *Number {
 	n := Number{make([]int, 0)}
 	for e := 0; i > 0; e++ {
@@ -50,7 +100,7 @@ func (n *Number) AddZero() {
 	// on values, Go will still call the method with the
 	// pointer receiver.
 	// i.e., if n is a value: n.AddZero() is the same as (&n).AddZero()
-	// This also works the other  way around for methods with
+	// This also works the other way around for methods with
 	// value-receivers.
 	n.coef = append(n.coef, 0)
 }
