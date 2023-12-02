@@ -6,3 +6,5 @@ __pycache__
 **/test*.txt
 **/in*.txt
 .vscode
+**/in
+**/test
