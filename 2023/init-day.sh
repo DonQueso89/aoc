@@ -43,7 +43,7 @@ func main() {
 
 	lines := strings.Split(string(data), "\n")
 	for _, line := range lines {
-                fmt.Println(line)
+				fmt.Println(line)
 	}
 
 }
