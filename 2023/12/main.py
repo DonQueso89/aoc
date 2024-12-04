@@ -10,6 +10,7 @@ parser.add_argument("input", type=str, help="input file")
 
 dir_ = Path(__file__).parent
 
+
 def get_result(inp):
     result = 0
     for mask, groups in inp:
@@ -27,22 +28,26 @@ def get_result(inp):
             base += ((1 << g) - 1) << offset
 
             offset += g + 1
-        
+
         def valid(bits, start, end):
             if end in [0, -1]:
-                _bit_mask = int(bin(bit_mask)[2:].zfill(num_bits)[start-1:], 2)
-                _non_bit_mask = int(bin(non_bit_mask)[2:].zfill(num_bits)[start-1:], 2)
+                _bit_mask = int(bin(bit_mask)[2:].zfill(num_bits)[start - 1 :], 2)
+                _non_bit_mask = int(
+                    bin(non_bit_mask)[2:].zfill(num_bits)[start - 1 :], 2
+                )
             else:
-                _bit_mask = int(bin(bit_mask)[2:].zfill(num_bits)[start-1:end+1], 2)
-                _non_bit_mask = int(bin(non_bit_mask)[2:].zfill(num_bits)[start-1:end+1], 2)
+                _bit_mask = int(
+                    bin(bit_mask)[2:].zfill(num_bits)[start - 1 : end + 1], 2
+                )
+                _non_bit_mask = int(
+                    bin(non_bit_mask)[2:].zfill(num_bits)[start - 1 : end + 1], 2
+                )
             if end < 0:
                 bits <<= 1
-            _full_mask = (1 << (end  - start) + 2) - 1
-            b = (bits & _bit_mask) == _bit_mask and (
+            _full_mask = (1 << (end - start) + 2) - 1
+            return (bits & _bit_mask) == _bit_mask and (
                 (bits ^ _full_mask) & _non_bit_mask
             ) == _non_bit_mask
-            return b
-
 
         def correct(test):
             _bit_mask = bit_mask
@@ -51,14 +56,22 @@ def get_result(inp):
                 (test ^ full_mask) & _non_bit_mask
             ) == _non_bit_mask
 
-        nums = []
+        def is_prefix(test):
+            test_len = len(bin(test)[2:])
+            _bit_mask = int(bin(bit_mask)[2:].zfill(num_bits)[-test_len:], 2)
+            _non_bit_mask = int(bin(non_bit_mask)[2:].zfill(num_bits)[-test_len:], 2)
+            _full_mask = (1 << test_len) - 1
+            return (test & _bit_mask) == _bit_mask and (
+                (test ^ _full_mask) & _non_bit_mask
+            ) == _non_bit_mask
 
+        nums = []
 
         offset = 0
         for g in reversed(groups):
             nums.append([])
             for i in range((num_bits - min_bits) + 1):
-                n = ((1 << g) - 1)
+                n = (1 << g) - 1
                 if valid(n, -(offset + i + g), -(offset + i)):
                     nums[-1].append(n << offset + i)
                 else:
@@ -68,7 +81,10 @@ def get_result(inp):
         def explore(_groups, s=0):
             if not _groups:
                 return correct(s)
-            
+
+            #if not is_prefix(s):
+                #return 0
+
             group = _groups.pop(0)
             _s = 0
             for i, x in enumerate(group):
