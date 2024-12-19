@@ -3,6 +3,7 @@
 import argparse
 from io import TextIOWrapper
 from pathlib import Path
+from utils import grids
 
 parser = argparse.ArgumentParser(description='day X')
 
